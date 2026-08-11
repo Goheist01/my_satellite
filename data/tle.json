@@ -1,0 +1,384 @@
+{
+  "generated_at": "2026-08-08T18:15:49.282364+00:00",
+  "source": "celestrak.org",
+  "count": 25,
+  "failed_count": 0,
+  "satellites": [
+    {
+      "norad_id": 25994,
+      "name": "Terra",
+      "celestrak_name": "TERRA",
+      "line1": "1 25994U 99068A   26220.40503883  .00000161  00000+0  41787-4 0  9992",
+      "line2": "2 25994  97.9422 267.8717 0003597  75.8070 340.9664 14.61139770417231",
+      "epoch": "2026-08-08T09:43:15.354889+00:00",
+      "tle_age_days": 0.36,
+      "current_position": {
+        "latitude_deg": 52.8072,
+        "longitude_deg": -132.3744,
+        "altitude_km": 696.5
+      },
+      "fetched_at": "2026-08-08T18:15:25.444Z"
+    },
+    {
+      "norad_id": 27424,
+      "name": "Aqua",
+      "celestrak_name": "AQUA",
+      "line1": "1 27424U 02022A   26220.55185845  .00000378  00000+0  84917-4 0  9998",
+      "line2": "2 27424  98.4325 190.8936 0001684  95.6503  18.7073 14.62159734290925",
+      "epoch": "2026-08-08T13:14:40.570068+00:00",
+      "tle_age_days": 0.21,
+      "current_position": {
+        "latitude_deg": 46.3129,
+        "longitude_deg": 148.8592,
+        "altitude_km": 692.4
+      },
+      "fetched_at": "2026-08-08T18:15:26.334Z"
+    },
+    {
+      "norad_id": 39084,
+      "name": "Landsat 8",
+      "celestrak_name": "LANDSAT 8",
+      "line1": "1 39084U 13008A   26220.48857193  .00000150  00000+0  43352-4 0  9999",
+      "line2": "2 39084  98.2269 289.9936 0001280  93.4709 266.6636 14.57107944705516",
+      "epoch": "2026-08-08T11:43:32.614777+00:00",
+      "tle_age_days": 0.27,
+      "current_position": {
+        "latitude_deg": -13.1422,
+        "longitude_deg": 61.0552,
+        "altitude_km": 708.4
+      },
+      "fetched_at": "2026-08-08T18:15:27.230Z"
+    },
+    {
+      "norad_id": 49260,
+      "name": "Landsat 9",
+      "celestrak_name": "LANDSAT 9",
+      "line1": "1 49260U 21088A   26220.17966663  .00000139  00000+0  40833-4 0  9990",
+      "line2": "2 49260  98.2249 289.7191 0001188 105.2539 254.8791 14.57109604258577",
+      "epoch": "2026-08-08T04:18:43.196838+00:00",
+      "tle_age_days": 0.58,
+      "current_position": {
+        "latitude_deg": 13.3941,
+        "longitude_deg": -118.8802,
+        "altitude_km": 704.4
+      },
+      "fetched_at": "2026-08-08T18:15:28.108Z"
+    },
+    {
+      "norad_id": 37849,
+      "name": "Suomi NPP",
+      "celestrak_name": "SUOMI NPP",
+      "line1": "1 37849U 11061A   26220.50006164  .00000030  00000+0  35136-4 0  9998",
+      "line2": "2 37849  98.7964 161.0222 0002054 141.7110 218.4212 14.19526856765865",
+      "epoch": "2026-08-08T12:00:05.325714+00:00",
+      "tle_age_days": 0.26,
+      "current_position": {
+        "latitude_deg": -69.8258,
+        "longitude_deg": 85.3745,
+        "altitude_km": 853.5
+      },
+      "fetched_at": "2026-08-08T18:15:28.980Z"
+    },
+    {
+      "norad_id": 43013,
+      "name": "NOAA-20",
+      "celestrak_name": "NOAA 20 (JPSS-1)",
+      "line1": "1 43013U 17073A   26220.44304030  .00000028  00000+0  34076-4 0  9992",
+      "line2": "2 43013  98.7779 159.4440 0001976  95.9214 264.2188 14.19520304451886",
+      "epoch": "2026-08-08T10:37:58.681946+00:00",
+      "tle_age_days": 0.32,
+      "current_position": {
+        "latitude_deg": -2.9974,
+        "longitude_deg": 108.1557,
+        "altitude_km": 830.3
+      },
+      "fetched_at": "2026-08-08T18:15:29.873Z"
+    },
+    {
+      "norad_id": 54234,
+      "name": "NOAA-21",
+      "celestrak_name": "NOAA 21 (JPSS-2)",
+      "line1": "1 54234U 22150A   26220.47494693 -.00000003  00000+0  19295-4 0  9999",
+      "line2": "2 54234  98.7065 158.3867 0002779  62.0300 298.1158 14.19544563193963",
+      "epoch": "2026-08-08T11:23:55.414764+00:00",
+      "tle_age_days": 0.29,
+      "current_position": {
+        "latitude_deg": 19.7367,
+        "longitude_deg": -75.6111,
+        "altitude_km": 827.9
+      },
+      "fetched_at": "2026-08-08T18:15:30.752Z"
+    },
+    {
+      "norad_id": 41866,
+      "name": "GOES-16",
+      "celestrak_name": "GOES 16",
+      "line1": "1 41866U 16071A   26220.48814119 -.00000095  00000+0  00000+0 0  9991",
+      "line2": "2 41866   0.4611  85.1735 0001214 118.0175 184.8109  1.00270574 35622",
+      "epoch": "2026-08-08T11:42:55.398804+00:00",
+      "tle_age_days": 0.27,
+      "current_position": {
+        "latitude_deg": 0.3207,
+        "longitude_deg": -104.7345,
+        "altitude_km": 35785.2
+      },
+      "fetched_at": "2026-08-08T18:15:31.635Z"
+    },
+    {
+      "norad_id": 51850,
+      "name": "GOES-18",
+      "celestrak_name": "GOES 18",
+      "line1": "1 51850U 22021A   26220.49142211  .00000093  00000+0  00000+0 0  9992",
+      "line2": "2 51850   0.0286 266.5748 0000693 305.3435 144.9816  1.00271592  7115",
+      "epoch": "2026-08-08T11:47:38.870270+00:00",
+      "tle_age_days": 0.27,
+      "current_position": {
+        "latitude_deg": 0.0027,
+        "longitude_deg": -137.012,
+        "altitude_km": 35787.5
+      },
+      "fetched_at": "2026-08-08T18:15:32.505Z"
+    },
+    {
+      "norad_id": 60133,
+      "name": "GOES-19",
+      "celestrak_name": "GOES 19",
+      "line1": "1 60133U 24119A   26220.49403455 -.00000252  00000+0  00000+0 0  9994",
+      "line2": "2 60133   0.0130  76.6413 0000725 154.8919 188.1201  1.00270297  7485",
+      "epoch": "2026-08-08T11:51:24.585144+00:00",
+      "tle_age_days": 0.27,
+      "current_position": {
+        "latitude_deg": 0.0345,
+        "longitude_deg": -75.2041,
+        "altitude_km": 35785.8
+      },
+      "fetched_at": "2026-08-08T18:15:33.395Z"
+    },
+    {
+      "norad_id": 39634,
+      "name": "Sentinel-1A",
+      "celestrak_name": "SENTINEL-1A",
+      "line1": "1 39634U 14016A   26220.54985987  .00000225  00000+0  57173-4 0  9999",
+      "line2": "2 39634  98.1590 227.2828 0001401  82.7653 277.3706 14.59380071657656",
+      "epoch": "2026-08-08T13:11:47.892792+00:00",
+      "tle_age_days": 0.21,
+      "current_position": {
+        "latitude_deg": 27.5923,
+        "longitude_deg": -7.9507,
+        "altitude_km": 698.0
+      },
+      "fetched_at": "2026-08-08T18:15:35.765Z"
+    },
+    {
+      "norad_id": 62261,
+      "name": "Sentinel-1C",
+      "celestrak_name": "SENTINEL-1C",
+      "line1": "1 62261U 24235A   26220.52117828 -.00000052  00000+0 -12815-5 0  9999",
+      "line2": "2 62261  98.1838 227.0887 0001316  89.0696 271.0654 14.59197910 89041",
+      "epoch": "2026-08-08T12:30:29.803406+00:00",
+      "tle_age_days": 0.24,
+      "current_position": {
+        "latitude_deg": 1.492,
+        "longitude_deg": 176.3675,
+        "altitude_km": 698.6
+      },
+      "fetched_at": "2026-08-08T18:15:36.720Z"
+    },
+    {
+      "norad_id": 66315,
+      "name": "Sentinel-1D",
+      "celestrak_name": "SENTINEL-1D",
+      "line1": "1 66315U 25251A   26220.48704484 -.00000143  00000+0 -20570-4 0  9994",
+      "line2": "2 66315  98.1831 227.1092 0001321  89.0047 271.1303 14.59197998 40352",
+      "epoch": "2026-08-08T11:41:20.674194+00:00",
+      "tle_age_days": 0.27,
+      "current_position": {
+        "latitude_deg": -2.5046,
+        "longitude_deg": -3.437,
+        "altitude_km": 699.1
+      },
+      "fetched_at": "2026-08-08T18:15:37.589Z"
+    },
+    {
+      "norad_id": 40697,
+      "name": "Sentinel-2A",
+      "celestrak_name": "SENTINEL-2A",
+      "line1": "1 40697U 15028A   26220.52239434  .00000323  00000+0  13987-3 0  9994",
+      "line2": "2 40697  98.5657 294.6240 0001365  90.1038 270.0302 14.30821280581211",
+      "epoch": "2026-08-08T12:32:14.870972+00:00",
+      "tle_age_days": 0.24,
+      "current_position": {
+        "latitude_deg": 31.876,
+        "longitude_deg": -110.9733,
+        "altitude_km": 792.6
+      },
+      "fetched_at": "2026-08-08T18:15:38.473Z"
+    },
+    {
+      "norad_id": 42063,
+      "name": "Sentinel-2B",
+      "celestrak_name": "SENTINEL-2B",
+      "line1": "1 42063U 17013A   26220.51519291  .00000224  00000+0  10213-3 0  9999",
+      "line2": "2 42063  98.5664 294.5442 0001270  92.1263 268.0066 14.30821668492123",
+      "epoch": "2026-08-08T12:21:52.667419+00:00",
+      "tle_age_days": 0.25,
+      "current_position": {
+        "latitude_deg": -4.9993,
+        "longitude_deg": -117.1466,
+        "altitude_km": 792.8
+      },
+      "fetched_at": "2026-08-08T18:15:39.344Z"
+    },
+    {
+      "norad_id": 60989,
+      "name": "Sentinel-2C",
+      "celestrak_name": "SENTINEL-2C",
+      "line1": "1 60989U 24157A   26220.20052035  .00000024  00000+0  25637-4 0  9992",
+      "line2": "2 60989  98.5665 294.2393 0001289 107.3026 252.8298 14.30821160100423",
+      "epoch": "2026-08-08T04:48:44.958252+00:00",
+      "tle_age_days": 0.56,
+      "current_position": {
+        "latitude_deg": 4.7257,
+        "longitude_deg": 62.8962,
+        "altitude_km": 791.6
+      },
+      "fetched_at": "2026-08-08T18:15:40.226Z"
+    },
+    {
+      "norad_id": 41335,
+      "name": "Sentinel-3A",
+      "celestrak_name": "SENTINEL-3A",
+      "line1": "1 41335U 16011A   26220.46328691  .00000063  00000+0  43869-4 0  9998",
+      "line2": "2 41335  98.6216 287.0871 0001111  86.6947 273.4360 14.26736418545514",
+      "epoch": "2026-08-08T11:07:07.989044+00:00",
+      "tle_age_days": 0.3,
+      "current_position": {
+        "latitude_deg": 81.1594,
+        "longitude_deg": -19.6632,
+        "altitude_km": 815.3
+      },
+      "fetched_at": "2026-08-08T18:15:41.107Z"
+    },
+    {
+      "norad_id": 43437,
+      "name": "Sentinel-3B",
+      "celestrak_name": "SENTINEL-3B",
+      "line1": "1 43437U 18039A   26220.43642435  .00000021  00000+0  26848-4 0  9999",
+      "line2": "2 43437  98.6214 287.2101 0001609 107.0160 253.1197 14.26736277431578",
+      "epoch": "2026-08-08T10:28:27.063843+00:00",
+      "tle_age_days": 0.32,
+      "current_position": {
+        "latitude_deg": -45.3991,
+        "longitude_deg": -132.46,
+        "altitude_km": 820.7
+      },
+      "fetched_at": "2026-08-08T18:15:41.975Z"
+    },
+    {
+      "norad_id": 42969,
+      "name": "Sentinel-5P",
+      "celestrak_name": "SENTINEL-5P",
+      "line1": "1 42969U 17064A   26220.43185987  .00000003  00000+0  22248-4 0  9999",
+      "line2": "2 42969  98.7938 162.1953 0001284  87.9656 272.1667 14.19526681456974",
+      "epoch": "2026-08-08T10:21:52.692780+00:00",
+      "tle_age_days": 0.33,
+      "current_position": {
+        "latitude_deg": -59.7762,
+        "longitude_deg": 96.0094,
+        "altitude_km": 850.8
+      },
+      "fetched_at": "2026-08-08T18:15:42.855Z"
+    },
+    {
+      "norad_id": 46984,
+      "name": "Sentinel-6 Michael Freilich",
+      "celestrak_name": "SENTINEL-6A",
+      "line1": "1 46984U 20086A   26220.16212463 -.00000056  00000+0  21477-4 0  9990",
+      "line2": "2 46984  66.0421  27.0972 0007749 269.2770  90.7357 12.80930449266981",
+      "epoch": "2026-08-08T03:53:27.568024+00:00",
+      "tle_age_days": 0.6,
+      "current_position": {
+        "latitude_deg": -53.2335,
+        "longitude_deg": 10.9329,
+        "altitude_km": 1352.2
+      },
+      "fetched_at": "2026-08-08T18:15:44.055Z"
+    },
+    {
+      "norad_id": 39766,
+      "name": "ALOS-2",
+      "celestrak_name": "ALOS-2",
+      "line1": "1 39766U 14029A   26220.55463353  .00000597  00000+0  86800-4 0  9999",
+      "line2": "2 39766  97.9220 316.9699 0001528  93.1756 266.9631 14.79467432659327",
+      "epoch": "2026-08-08T13:18:40.336975+00:00",
+      "tle_age_days": 0.21,
+      "current_position": {
+        "latitude_deg": 18.0587,
+        "longitude_deg": 83.3813,
+        "altitude_km": 633.2
+      },
+      "fetched_at": "2026-08-08T18:15:45.013Z"
+    },
+    {
+      "norad_id": 60182,
+      "name": "ALOS-4",
+      "celestrak_name": "ALOS-4 (DAICHI-4)",
+      "line1": "1 60182U 24123A   26220.10055797  .00000711  00000+0  10210-3 0  9990",
+      "line2": "2 60182  97.9221 316.5307 0001485  97.2730 262.8651 14.79471618113553",
+      "epoch": "2026-08-08T02:24:48.208588+00:00",
+      "tle_age_days": 0.66,
+      "current_position": {
+        "latitude_deg": -80.5116,
+        "longitude_deg": 141.8727,
+        "altitude_km": 660.2
+      },
+      "fetched_at": "2026-08-08T18:15:46.636Z"
+    },
+    {
+      "norad_id": 40376,
+      "name": "SMAP",
+      "celestrak_name": "SMAP",
+      "line1": "1 40376U 15003A   26220.52415214  .00000198  00000+0  47498-4 0  9998",
+      "line2": "2 40376  98.1299 226.8820 0001357  89.8614 270.2744 14.63347761615279",
+      "epoch": "2026-08-08T12:34:46.744904+00:00",
+      "tle_age_days": 0.24,
+      "current_position": {
+        "latitude_deg": 12.8702,
+        "longitude_deg": 177.7598,
+        "altitude_km": 684.4
+      },
+      "fetched_at": "2026-08-08T18:15:47.516Z"
+    },
+    {
+      "norad_id": 43613,
+      "name": "ICESat-2",
+      "celestrak_name": "ICESAT-2",
+      "line1": "1 43613U 18070A   26220.47280737  .00004566  00000+0  16594-3 0  9991",
+      "line2": "2 43613  92.0080 305.1093 0000279   9.2884 350.8370 15.28251248440448",
+      "epoch": "2026-08-08T11:20:50.556793+00:00",
+      "tle_age_days": 0.29,
+      "current_position": {
+        "latitude_deg": 35.6019,
+        "longitude_deg": -104.602,
+        "altitude_km": 486.2
+      },
+      "fetched_at": "2026-08-08T18:15:48.399Z"
+    },
+    {
+      "norad_id": 40336,
+      "name": "CBERS-4",
+      "celestrak_name": "CBERS 4",
+      "line1": "1 40336U 14079A   26220.52253968  .00000158  00000+0  69707-4 0  9995",
+      "line2": "2 40336  98.3497 275.7024 0000833 122.7692 237.3574 14.35521941611462",
+      "epoch": "2026-08-08T12:32:27.428345+00:00",
+      "tle_age_days": 0.24,
+      "current_position": {
+        "latitude_deg": 28.0301,
+        "longitude_deg": -130.8326,
+        "altitude_km": 776.3
+      },
+      "fetched_at": "2026-08-08T18:15:49.281Z"
+    }
+  ],
+  "failures": []
+}

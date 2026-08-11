@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SGP4 parity check -- Python vs satellite.js</title>
+<script crossorigin src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #131722;
+    --border: #262b3a;
+    --text: #d8dce6;
+    --muted: #7a8299;
+    --ok: #3ecf8e;
+    --warn: #e8b339;
+    --bad: #e8543e;
+    --mono: "SF Mono", Menlo, Consolas, monospace;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    margin: 0;
+    padding: 32px;
+  }
+  h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  p.sub {
+    color: var(--muted);
+    margin: 0 0 24px;
+    font-size: 12px;
+  }
+  #summary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 32px;
+  }
+  #summary .stat { display: flex; flex-direction: column; gap: 2px; }
+  #summary .stat .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  #summary .stat .value { font-size: 18px; font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.status-ok td.diff { color: var(--ok); }
+  tr.status-warn td.diff { color: var(--warn); }
+  tr.status-bad td.diff { color: var(--bad); }
+  tr.status-error td { color: var(--bad); }
+  .pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .pill.ok { background: rgba(62,207,142,0.15); color: var(--ok); }
+  .pill.warn { background: rgba(232,179,57,0.15); color: var(--warn); }
+  .pill.bad { background: rgba(232,84,62,0.15); color: var(--bad); }
+</style>
+</head>
+<body>
+
+<h1>SGP4 parity check</h1>
+<p class="sub">
+  For every satellite in data/tle.json, propagates the same TLE to the exact
+  instant Python already computed (<code>fetched_at</code>), using satellite.js
+  in this browser instead of skyfield in Python. Small diffs (fractions of a
+  degree / a few hundred meters) are expected float/algorithm noise. Large
+  diffs mean something's actually wrong -- wrong TLE, wrong satellite, or a
+  units bug -- and Stage 3 shouldn't start until every row here is green.
+</p>
+
+<div id="summary"></div>
+<table>
+  <thead>
+    <tr>
+      <th>Satellite</th>
+      <th>NORAD</th>
+      <th colspan="3">Python (skyfield)</th>
+      <th colspan="3">Browser (satellite.js)</th>
+      <th colspan="3">Diff</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <th></th><th></th>
+      <th>lat</th><th>lon</th><th>alt km</th>
+      <th>lat</th><th>lon</th><th>alt km</th>
+      <th>lat</th><th>lon</th><th>alt km</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+
+<script>
+// Diff thresholds. Both engines implement the same SGP4 standard against the
+// same TLE at the same instant, so agreement should be tight -- these are
+// deliberately generous to avoid false alarms from float rounding, not because
+// bigger drift is actually fine.
+const LATLON_OK_DEG = 0.01;
+const LATLON_WARN_DEG = 0.1;
+const ALT_OK_KM = 1;
+const ALT_WARN_KM = 5;
+
+function lonDiff(a, b) {
+  const d = Math.abs(a - b);
+  return Math.min(d, 360 - d);
+}
+
+function classify(latD, lonD, altD) {
+  if (latD <= LATLON_OK_DEG && lonD <= LATLON_OK_DEG && altD <= ALT_OK_KM) return "ok";
+  if (latD <= LATLON_WARN_DEG && lonD <= LATLON_WARN_DEG && altD <= ALT_WARN_KM) return "warn";
+  return "bad";
+}
+
+function propagateJS(entry) {
+  const satrec = satellite.twoline2satrec(entry.line1, entry.line2);
+  const date = new Date(entry.fetched_at);
+  const pv = satellite.propagate(satrec, date);
+  if (!pv || !pv.position) throw new Error("satellite.js propagation returned no position");
+  const gmst = satellite.gstime(date);
+  const geo = satellite.eciToGeodetic(pv.position, gmst);
+  return {
+    lat: satellite.degreesLat(geo.latitude),
+    lon: satellite.degreesLong(geo.longitude),
+    alt: geo.height,
+  };
+}
+
+async function main() {
+  const res = await fetch("/data/tle.json", { cache: "no-store" });
+  if (!res.ok) {
+    document.getElementById("rows").innerHTML =
+      `<tr><td colspan="12">Couldn't load /data/tle.json (HTTP ${res.status}). ` +
+      `Serve this page from the project root, e.g. ` +
+      `<code>python3 -m http.server 8000</code>, then open ` +
+      `<code>http://localhost:8000/web/parity_check.html</code>.</td></tr>`;
+    return;
+  }
+  const data = await res.json();
+
+  const rowsEl = document.getElementById("rows");
+  let ok = 0, warn = 0, bad = 0, errors = 0;
+  let maxLatD = 0, maxLonD = 0, maxAltD = 0;
+
+  for (const entry of data.satellites) {
+    const tr = document.createElement("tr");
+    try {
+      const js = propagateJS(entry);
+      const py = entry.current_position;
+
+      const latD = Math.abs(py.latitude_deg - js.lat);
+      const lonD = lonDiff(py.longitude_deg, js.lon);
+      const altD = Math.abs(py.altitude_km - js.alt);
+      maxLatD = Math.max(maxLatD, latD);
+      maxLonD = Math.max(maxLonD, lonD);
+      maxAltD = Math.max(maxAltD, altD);
+
+      const status = classify(latD, lonD, altD);
+      if (status === "ok") ok++;
+      else if (status === "warn") warn++;
+      else bad++;
+
+      tr.className = `status-${status}`;
+      tr.innerHTML = `
+        <td>${entry.name}</td>
+        <td class="num">${entry.norad_id}</td>
+        <td class="num">${py.latitude_deg.toFixed(4)}</td>
+        <td class="num">${py.longitude_deg.toFixed(4)}</td>
+        <td class="num">${py.altitude_km.toFixed(1)}</td>
+        <td class="num">${js.lat.toFixed(4)}</td>
+        <td class="num">${js.lon.toFixed(4)}</td>
+        <td class="num">${js.alt.toFixed(1)}</td>
+        <td class="num diff">${latD.toFixed(4)}</td>
+        <td class="num diff">${lonD.toFixed(4)}</td>
+        <td class="num diff">${altD.toFixed(2)}</td>
+        <td><span class="pill ${status}">${status}</span></td>
+      `;
+    } catch (e) {
+      errors++;
+      tr.className = "status-error";
+      tr.innerHTML = `
+        <td>${entry.name}</td>
+        <td class="num">${entry.norad_id}</td>
+        <td colspan="9">${e.message}</td>
+        <td><span class="pill bad">error</span></td>
+      `;
+    }
+    rowsEl.appendChild(tr);
+  }
+
+  const total = data.satellites.length;
+  document.getElementById("summary").innerHTML = `
+    <div class="stat"><span class="label">Satellites</span><span class="value">${total}</span></div>
+    <div class="stat"><span class="label">OK</span><span class="value" style="color:var(--ok)">${ok}</span></div>
+    <div class="stat"><span class="label">Warn</span><span class="value" style="color:var(--warn)">${warn}</span></div>
+    <div class="stat"><span class="label">Bad / Error</span><span class="value" style="color:var(--bad)">${bad + errors}</span></div>
+    <div class="stat"><span class="label">Max lat diff</span><span class="value">${maxLatD.toFixed(4)}&deg;</span></div>
+    <div class="stat"><span class="label">Max lon diff</span><span class="value">${maxLonD.toFixed(4)}&deg;</span></div>
+    <div class="stat"><span class="label">Max alt diff</span><span class="value">${maxAltD.toFixed(2)}km</span></div>
+  `;
+}
+
+main().catch(e => {
+  document.getElementById("rows").innerHTML =
+    `<tr><td colspan="12">Fatal error: ${e.message}</td></tr>`;
+});
+</script>
+</body>
+</html>

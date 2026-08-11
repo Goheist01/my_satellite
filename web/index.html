@@ -1,0 +1,1978 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>EO Satellite Orbit Visualizer</title>
+    <script
+      crossorigin
+      src="https://cdn.jsdelivr.net/npm/pixi.js@8.19.0/dist/pixi.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"
+    ></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0a1224;
+        touch-action: none; /* full drag control belongs to the app; no browser pan/pinch */
+      }
+      #app-root {
+        width: 100%;
+        height: 100%;
+      }
+      canvas {
+        display: block;
+        outline: none;
+        cursor: grab;
+      }
+      canvas.dragging {
+        cursor: grabbing;
+      }
+      #loading {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #8891a8;
+        font:
+          13px ui-monospace,
+          "SF Mono",
+          Menlo,
+          Consolas,
+          monospace;
+        letter-spacing: 0.05em;
+      }
+      #loading.hidden {
+        display: none;
+      }
+
+      /* ---- Satellite dex ---- */
+      #dex {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(6, 10, 20, 0.82);
+        backdrop-filter: blur(3px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 220ms ease;
+        z-index: 10;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      #dex.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #dex-card {
+        width: min(880px, 92vw);
+        max-height: 88vh;
+        display: flex;
+        gap: 22px;
+        background: linear-gradient(180deg, #121a2b 0%, #0d1420 100%);
+        border: 1px solid #2b3852;
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+        transform: translateY(14px) scale(0.97);
+        transition: transform 260ms cubic-bezier(0.2, 0.9, 0.3, 1);
+        overflow: hidden;
+      }
+      #dex.open #dex-card {
+        transform: none;
+      }
+      #dex-left {
+        flex: 0 0 34%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 45%, #1b2740 0%, #0b1220 70%);
+        border: 1px solid #24304a;
+        border-radius: 10px;
+        padding: 18px 10px;
+      }
+      #dex-sprite {
+        image-rendering: pixelated;
+        width: 74%;
+        height: auto;
+        animation: dexhover 3.6s ease-in-out infinite;
+      }
+      @keyframes dexhover {
+        0%,
+        100% {
+          transform: translateY(-5px);
+        }
+        50% {
+          transform: translateY(5px);
+        }
+      }
+      #dex-type {
+        margin-top: 14px;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #7ec8e3;
+        border: 1px solid #2c4a5c;
+        border-radius: 999px;
+        padding: 3px 10px;
+      }
+      #dex-right {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-y: auto;
+        color: #d8dce6;
+      }
+      #dex-name {
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0 0 2px;
+      }
+      #dex-agency {
+        font-size: 12px;
+        color: #8891a8;
+        margin: 0 0 16px;
+      }
+      #dex-desc {
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 13.5px;
+        line-height: 1.55;
+        color: #b9c2d4;
+        margin: 0 0 18px;
+      }
+      .dex-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 18px;
+        margin-bottom: 16px;
+      }
+      .dex-field {
+        border-left: 2px solid #2b3852;
+        padding-left: 10px;
+      }
+      .dex-label {
+        font-size: 9.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #6d7690;
+      }
+      .dex-value {
+        font-size: 13px;
+        color: #e4e9f2;
+        font-variant-numeric: tabular-nums;
+      }
+      .dex-live .dex-label {
+        color: #7ec8e3;
+      }
+      #dex-note {
+        font-size: 11px;
+        color: #6d7690;
+        margin: 0 0 14px;
+      }
+      #dex-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .dex-btn {
+        font-family: inherit;
+        font-size: 12px;
+        padding: 9px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #1b2740;
+        color: #d8dce6;
+        border: 1px solid #2b3852;
+      }
+      .dex-btn:hover {
+        background: #223051;
+      }
+      .dex-btn[disabled] {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      #dex-close {
+        background: transparent;
+      }
+      @media (max-width: 720px) {
+        #dex-card {
+          flex-direction: column;
+          gap: 14px;
+          padding: 16px;
+        }
+        #dex-left {
+          flex: 0 0 auto;
+          padding: 12px;
+        }
+        #dex-sprite {
+          width: 42%;
+        }
+        #dex-name {
+          font-size: 18px;
+        }
+        .dex-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">LOADING ORBITAL DATA...</div>
+    <div id="app-root"></div>
+
+    <div id="dex" aria-hidden="true">
+      <div
+        id="dex-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dex-name"
+      >
+        <div id="dex-left">
+          <canvas id="dex-sprite"></canvas>
+          <div id="dex-type"></div>
+        </div>
+        <div id="dex-right">
+          <h2 id="dex-name"></h2>
+          <p id="dex-agency"></p>
+          <p id="dex-desc"></p>
+          <div class="dex-grid">
+            <div class="dex-field">
+              <div class="dex-label">Launched</div>
+              <div class="dex-value" id="dex-launch"></div>
+            </div>
+            <div class="dex-field">
+              <div class="dex-label">NORAD ID</div>
+              <div class="dex-value" id="dex-norad"></div>
+            </div>
+            <div class="dex-field">
+              <div class="dex-label">Data type</div>
+              <div class="dex-value" id="dex-datatype"></div>
+            </div>
+            <div class="dex-field">
+              <div class="dex-label">TLE age</div>
+              <div class="dex-value" id="dex-tleage"></div>
+            </div>
+          </div>
+          <div class="dex-grid dex-live">
+            <div class="dex-field">
+              <div class="dex-label">Latitude (live)</div>
+              <div class="dex-value" id="dex-lat"></div>
+            </div>
+            <div class="dex-field">
+              <div class="dex-label">Longitude (live)</div>
+              <div class="dex-value" id="dex-lon"></div>
+            </div>
+            <div class="dex-field">
+              <div class="dex-label">Altitude (live)</div>
+              <div class="dex-value" id="dex-alt"></div>
+            </div>
+            <div class="dex-field">
+              <div class="dex-label">Status</div>
+              <div class="dex-value" id="dex-status"></div>
+            </div>
+          </div>
+          <p id="dex-note"></p>
+          <div id="dex-actions">
+            <button class="dex-btn" id="dex-capture" disabled>
+              Last capture — coming soon
+            </button>
+            <button class="dex-btn" id="dex-close">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (async () => {
+        // =====================================================================
+        // Little-planet free-roam surface.
+        //
+        // Design locked in prototyping (2026-08): true 3D trackball rotation
+        // (Rodrigues) over a sphere of real satellite positions, rendered as a
+        // 2D "perspective band" -- satellites recede INTO the horizon curve when
+        // you roll away from them, enter from the bottom when you roll toward
+        // them, slide out the sides on horizontal roam, and exactly one satellite
+        // is eased into the center spotlight after every drag. Earth surface and
+        // satellites share ONE rotation frame (this was a hard-won bug fix: two
+        // separate motion sources made the lattice "float free" of the ground).
+        // Top ~half of the screen stays clear for the future info panel / UI.
+        //
+        // Altitude is deliberately NOT part of placement in this phase.
+        // =====================================================================
+
+        // ---------------- data ----------------
+        // tle.json carries orbital data; satellites.json carries the curated
+        // metadata (agency, data_type, description). Joined by norad_id here --
+        // data_type drives sprite selection now, and the rest feeds Stage 4's
+        // info panel later.
+        const [tleRes, metaRes, landRes] = await Promise.all([
+          fetch("/data/tle.json", { cache: "no-store" }),
+          fetch("/data/satellites.json", { cache: "no-store" }),
+          fetch("/data/land.json", { cache: "no-store" }),
+        ]);
+        if (!tleRes.ok || !metaRes.ok) {
+          document.getElementById("loading").textContent =
+            `Couldn't load data (tle.json HTTP ${tleRes.status}, satellites.json HTTP ${metaRes.status}). ` +
+            `Serve from the project root: python3 -m http.server 8000`;
+          return;
+        }
+        const tleData = await tleRes.json();
+        const metaData = await metaRes.json();
+        // Land is optional -- the app still works (bare surface) if it's missing.
+        const landData = landRes.ok ? await landRes.json() : { polygons: [] };
+        const metaById = new Map(
+          metaData.satellites.map((m) => [m.norad_id, m]),
+        );
+
+        function classifyType(dataType) {
+          if (!dataType) return "generic";
+          if (/altimetry/i.test(dataType)) return "generic"; // radar ALTIMETERS (Sentinel-6) are not SAR imaging birds
+          if (/SAR|radar/i.test(dataType)) return "sar";
+          if (/geostationary/i.test(dataType)) return "geo";
+          if (/optical|multispectral/i.test(dataType)) return "optical";
+          return "generic";
+        }
+
+        const catalog = tleData.satellites
+          .filter((s) => s.line1 && s.line2)
+          .map((s) => {
+            const meta = metaById.get(s.norad_id) || {};
+            return {
+              ...s,
+              meta,
+              spriteType: classifyType(meta.data_type),
+              satrec: satellite.twoline2satrec(s.line1, s.line2),
+              v: { x: 1, y: 0, z: 0 }, // unit vector, filled by propagate()
+              ok: true,
+            };
+          });
+
+        function propagateAll(date) {
+          const gmst = satellite.gstime(date);
+          for (const s of catalog) {
+            const pv = satellite.propagate(s.satrec, date);
+            if (!pv || !pv.position) {
+              s.ok = false;
+              continue;
+            }
+            const geo = satellite.eciToGeodetic(pv.position, gmst);
+            const lat = geo.latitude,
+              lon = geo.longitude; // radians
+            s.v = {
+              x: Math.cos(lat) * Math.cos(lon),
+              y: Math.cos(lat) * Math.sin(lon),
+              z: Math.sin(lat),
+            };
+            // keep human-readable position for the dex readout
+            s.latDeg = (lat * 180) / Math.PI;
+            s.lonDeg = (lon * 180) / Math.PI;
+            s.altKm = geo.height;
+            s.ok = true;
+          }
+        }
+
+        // Nearest-neighbor lattice (k=2) over 3D chord distance. Positions move
+        // (these are real orbits), so edges are recomputed on each propagation
+        // tick -- trivial cost at this catalog size (25^2 comparisons).
+        let edgePairs = [];
+        function rebuildLattice() {
+          const alive = catalog.filter((s) => s.ok);
+          const edgeSet = new Set();
+          alive.forEach((s, i) => {
+            const dists = alive
+              .map((o, j) => {
+                if (j === i) return { j, d: Infinity };
+                const dx = o.v.x - s.v.x,
+                  dy = o.v.y - s.v.y,
+                  dz = o.v.z - s.v.z;
+                return { j, d: dx * dx + dy * dy + dz * dz };
+              })
+              .sort((a, b) => a.d - b.d);
+            for (let k = 0; k < 2 && k < dists.length; k++) {
+              const j = dists[k].j;
+              edgeSet.add(i < j ? `${i}-${j}` : `${j}-${i}`);
+            }
+          });
+          edgePairs = [...edgeSet].map((key) =>
+            key
+              .split("-")
+              .map(Number)
+              .map((idx) => alive[idx]),
+          );
+        }
+
+        propagateAll(new Date());
+        rebuildLattice();
+        // (refresh interval registered at the end of setup, once everything it touches exists)
+
+        // ---------------- rotation (trackball) ----------------
+        function rotAxis(v, axis, angle) {
+          const c = Math.cos(angle),
+            s = Math.sin(angle);
+          const dot = v.x * axis.x + v.y * axis.y + v.z * axis.z;
+          const cx = axis.y * v.z - axis.z * v.y;
+          const cy = axis.z * v.x - axis.x * v.z;
+          const cz = axis.x * v.y - axis.y * v.x;
+          return {
+            x: v.x * c + cx * s + axis.x * dot * (1 - c),
+            y: v.y * c + cy * s + axis.y * dot * (1 - c),
+            z: v.z * c + cz * s + axis.z * dot * (1 - c),
+          };
+        }
+        const vdot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+
+        let baseF = { x: 1, y: 0, z: 0 },
+          baseR = { x: 0, y: 1, z: 0 },
+          baseU = { x: 0, y: 0, z: 1 };
+        let curF = baseF,
+          curR = baseR,
+          curU = baseU;
+        let dragging = false,
+          pendingDown = false,
+          dsx = 0,
+          dsy = 0;
+        const DRAG_THRESHOLD_PX = 6; // below this, a press is a tap, not a drag -- keeps stage-cleared satellites stationary (and thus tappable) during the press
+        let snapping = false;
+        let snapTarget = null; // tap-selected satellite; references the LIVE object so the snap tracks its real moving orbit
+        const SENS = 0.006;
+
+        function applySnapStep() {
+          // Ease the target (tap-selected, else nearest) into dead-center:
+          // the spotlight always holds exactly one satellite.
+          let targetV = null;
+          if (snapTarget && snapTarget.ok) {
+            targetV = snapTarget.v;
+          } else {
+            let nearestAng = Infinity;
+            for (const s of catalog) {
+              if (!s.ok) continue;
+              const ang = Math.acos(
+                Math.max(-1, Math.min(1, vdot(s.v, baseF))),
+              );
+              if (ang < nearestAng) {
+                nearestAng = ang;
+                targetV = s.v;
+              }
+            }
+          }
+          if (!targetV) {
+            snapping = false;
+            snapTarget = null;
+            return;
+          }
+          const angToTarget = Math.acos(
+            Math.max(-1, Math.min(1, vdot(targetV, baseF))),
+          );
+          if (angToTarget < 0.001) {
+            snapping = false;
+            snapTarget = null;
+            return;
+          }
+          let axis = {
+            x: baseF.y * targetV.z - baseF.z * targetV.y,
+            y: baseF.z * targetV.x - baseF.x * targetV.z,
+            z: baseF.x * targetV.y - baseF.y * targetV.x,
+          };
+          const len = Math.sqrt(vdot(axis, axis));
+          if (len < 1e-6) {
+            snapping = false;
+            snapTarget = null;
+            return;
+          }
+          axis = { x: axis.x / len, y: axis.y / len, z: axis.z / len };
+          const step = angToTarget * 0.15;
+          baseF = rotAxis(baseF, axis, step);
+          baseR = rotAxis(baseR, axis, step);
+          baseU = rotAxis(baseU, axis, step);
+          curF = baseF;
+          curR = baseR;
+          curU = baseU;
+        }
+
+        // ---------------- pixel-art sprites ----------------
+        // Procedural pixel art: tiny grids defined in code, rendered ONCE to
+        // textures at load, displayed with nearest-neighbor scaling. No image
+        // downloads (mobile data budget), no build step, type-differentiated
+        // silhouettes so the sensor taxonomy is visible at a glance:
+        //   sar     -- long radar panel birds (Sentinel-1, ALOS)
+        //   optical -- boxy imager with twin solar wings (Landsat, Sentinel-2)
+        //   geo     -- geostationary weather bird with dish (GOES)
+        //   generic -- everything else (altimetry, sounders, ICESat...)
+        const PALETTE = {
+          P: 0x33383f, // solar panel: dark gunmetal
+          p: 0x565e69, // solar panel: lighter cell lines
+          B: 0xb8bec8, // body: brushed silver
+          b: 0x1d2025, // body shadow: near-black
+          S: 0x7d8590, // structure: mid steel
+          W: 0xe8ecf2, // white / dish
+        };
+
+        const OUTLINE_COLOR = 0xffffff;
+
+        const SPRITE_GRIDS = {
+          optical: [
+            "PPP.......PPP",
+            "PpP..BBB..PpP",
+            "PPPSSBbBSSPPP",
+            "PpP..BBB..PpP",
+            "PPP...S...PPP",
+            "..........W..",
+          ],
+          sar: [
+            "..........BBB",
+            "PPPPPPPPS.BbB",
+            "PpPpPpPpSSBBB",
+            "PPPPPPPPS..S.",
+            "...........W.",
+          ],
+          geo: [
+            "......WW.....",
+            ".....WWWW....",
+            "..S..WWWW....",
+            "PPPSSBBBb....",
+            "PpPS.BBBb....",
+            "PPP..bbbb....",
+          ],
+          generic: [
+            ".PPP.....PPP.",
+            ".PpPS.B.SPpP.",
+            ".PPPSBbBSPPP.",
+            ".PpPS.B.SPpP.",
+            "......W......",
+          ],
+        };
+
+        // ---------------- sun & moon (real ephemeris, illustrative rendering) ----
+        // The subsolar/sublunar points are real geography: the exact lat/lon where
+        // the sun/moon are directly overhead right now. Pinned to the sphere the
+        // same way satellites are, so roaming to the night side genuinely sets the
+        // sun behind your horizon. Low-precision formulas (error well under 1 deg
+        // for sun, ~1 deg for moon) -- far more than enough for illustration.
+        const D2R = Math.PI / 180,
+          R2D = 180 / Math.PI;
+        const daysSinceJ2000 = (date) =>
+          (date.getTime() - Date.UTC(2000, 0, 1, 12, 0, 0)) / 86400000;
+        const wrapLonDeg = (lon) => (((lon % 360) + 540) % 360) - 180;
+
+        function latLonToVec(latDeg, lonDeg) {
+          const lat = latDeg * D2R,
+            lon = lonDeg * D2R;
+          return {
+            x: Math.cos(lat) * Math.cos(lon),
+            y: Math.cos(lat) * Math.sin(lon),
+            z: Math.sin(lat),
+          };
+        }
+
+        // Land polygons: lat/lon converted ONCE to unit vectors on the same sphere
+        // the satellites live on, so coastlines rotate in perfect lockstep with
+        // everything else. Each polygon also caches a centroid vector, used for
+        // cheap whole-polygon culling when it's on the far side of the globe.
+        function slerp(a, b, t) {
+          const dot = Math.max(
+            -1,
+            Math.min(1, a.x * b.x + a.y * b.y + a.z * b.z),
+          );
+          const om = Math.acos(dot);
+          if (om < 1e-6) return { x: a.x, y: a.y, z: a.z };
+          const so = Math.sin(om),
+            s1 = Math.sin((1 - t) * om) / so,
+            s2 = Math.sin(t * om) / so;
+          return {
+            x: a.x * s1 + b.x * s2,
+            y: a.y * s1 + b.y * s2,
+            z: a.z * s1 + b.z * s2,
+          };
+        }
+
+        // Coastline edges are subdivided ONCE here (they're static on the sphere).
+        // A 20-degree coastline edge drawn as one straight screen line deviates
+        // badly from the curved ground projection; capping edges at ~3 degrees
+        // keeps the outline hugging the surface.
+        const MAX_EDGE_RAD = (3 * Math.PI) / 180;
+        function densify(verts) {
+          const out = [];
+          for (let i = 0; i < verts.length; i++) {
+            const a = verts[i],
+              b = verts[(i + 1) % verts.length];
+            out.push(a);
+            const ang = Math.acos(
+              Math.max(-1, Math.min(1, a.x * b.x + a.y * b.y + a.z * b.z)),
+            );
+            const steps = Math.ceil(ang / MAX_EDGE_RAD);
+            for (let s = 1; s < steps; s++) out.push(slerp(a, b, s / steps));
+          }
+          return out;
+        }
+
+        const landPolys = (landData.polygons || [])
+          .map((ring) => {
+            const pts = ring.slice();
+            // build_landmass.py closes each ring; the duplicate breaks edge-walking
+            if (
+              pts.length > 1 &&
+              pts[0][0] === pts[pts.length - 1][0] &&
+              pts[0][1] === pts[pts.length - 1][1]
+            ) {
+              pts.pop();
+            }
+            const verts = densify(
+              pts.map(([lon, lat]) => latLonToVec(lat, lon)),
+            );
+            let cx = 0,
+              cy = 0,
+              cz = 0;
+            for (const v of verts) {
+              cx += v.x;
+              cy += v.y;
+              cz += v.z;
+            }
+            const len = Math.hypot(cx, cy, cz) || 1;
+            const centroid = { x: cx / len, y: cy / len, z: cz / len };
+            // angular radius: how far the polygon reaches from its own centroid,
+            // so the cheap cull can't clip a continent that's partially in view
+            let radius = 0;
+            for (const v of verts) {
+              const a = Math.acos(
+                Math.max(
+                  -1,
+                  Math.min(
+                    1,
+                    v.x * centroid.x + v.y * centroid.y + v.z * centroid.z,
+                  ),
+                ),
+              );
+              if (a > radius) radius = a;
+            }
+            return { verts, centroid, radius };
+          })
+          .filter((p) => p.verts.length >= 3);
+
+        function subsolarVec(date) {
+          const n = daysSinceJ2000(date);
+          const L = (280.46 + 0.9856474 * n) % 360;
+          const g = (357.528 + 0.9856003 * n) % 360;
+          const lambda =
+            (L + 1.915 * Math.sin(g * D2R) + 0.02 * Math.sin(2 * g * D2R)) *
+            D2R;
+          const eps = 23.439 * D2R;
+          const dec = Math.asin(Math.sin(eps) * Math.sin(lambda));
+          const ra = Math.atan2(
+            Math.cos(eps) * Math.sin(lambda),
+            Math.cos(lambda),
+          );
+          const gmst = satellite.gstime(date);
+          return latLonToVec(dec * R2D, wrapLonDeg((ra - gmst) * R2D));
+        }
+
+        function sublunarVec(date) {
+          const n = daysSinceJ2000(date);
+          const Lm = (218.316 + 13.176396 * n) % 360;
+          const Mm = (134.963 + 13.064993 * n) % 360;
+          const F = (93.272 + 13.22935 * n) % 360;
+          const lambda = (Lm + 6.289 * Math.sin(Mm * D2R)) * D2R;
+          const beta = 5.128 * Math.sin(F * D2R) * D2R;
+          const eps = 23.439 * D2R;
+          const dec = Math.asin(
+            Math.sin(beta) * Math.cos(eps) +
+              Math.cos(beta) * Math.sin(eps) * Math.sin(lambda),
+          );
+          const ra = Math.atan2(
+            Math.sin(lambda) * Math.cos(eps) - Math.tan(beta) * Math.sin(eps),
+            Math.cos(lambda),
+          );
+          const gmst = satellite.gstime(date);
+          return latLonToVec(dec * R2D, wrapLonDeg((ra - gmst) * R2D));
+        }
+
+        // Celestial art is generated procedurally (radial gradients and crater
+        // scatter are easier to get right in code than in hand grids):
+        //   sun  -- light-yellow core graduating to bronze at the rim; NO baked
+        //           rays (heat-wave arcs are animated live around it instead)
+        //   moon -- silver-blue disc with terminator shading; craters live on a
+        //           separate strip that drifts across the face behind a circular
+        //           mask, giving a slow body-rotation illusion while staying
+        //           pixel-crisp (rotating the sprite itself would shimmer)
+
+        function buildSpriteTextures(renderer) {
+          const textures = {};
+          for (const [type, grid] of Object.entries(SPRITE_GRIDS)) {
+            const rows = grid.length,
+              cols = grid[0].length;
+            const filled = (x, y) =>
+              x >= 0 && y >= 0 && x < cols && y < rows && grid[y][x] !== ".";
+
+            const g = new PIXI.Graphics();
+            // Outline pass: every empty cell (in a 1px-padded frame) touching the
+            // silhouette (8-neighborhood) becomes a white "container" pixel --
+            // crisp pixel-art separation when sprites overlap, baked into the
+            // texture so it costs nothing at render time.
+            for (let y = -1; y <= rows; y++) {
+              for (let x = -1; x <= cols; x++) {
+                if (filled(x, y)) continue;
+                let touches = false;
+                for (let dy = -1; dy <= 1 && !touches; dy++)
+                  for (let dx = -1; dx <= 1 && !touches; dx++)
+                    if ((dx || dy) && filled(x + dx, y + dy)) touches = true;
+                if (touches)
+                  g.rect(x + 1, y + 1, 1, 1).fill({
+                    color: OUTLINE_COLOR,
+                    alpha: 0.9,
+                  });
+              }
+            }
+            // Body pass (offset +1 for the outline padding)
+            grid.forEach((row, y) => {
+              [...row].forEach((ch, x) => {
+                if (ch === ".") return;
+                g.rect(x + 1, y + 1, 1, 1).fill({ color: PALETTE[ch] });
+              });
+            });
+            const tex = renderer.generateTexture(g);
+            tex.source.scaleMode = "nearest"; // crisp pixels at any display scale
+            textures[type] = { texture: tex, gridH: rows + 2, gridW: cols + 2 };
+            g.destroy();
+          }
+          return textures;
+        }
+
+        // ---------------- pixi ----------------
+        const app = new PIXI.Application();
+        await app.init({
+          background: "#0a1224",
+          resizeTo: window,
+          antialias: true,
+          resolution: window.devicePixelRatio || 1, // render at native density -- without this, Retina displays upscale a 1x canvas and EVERYTHING blurs
+          autoDensity: true,
+        });
+        document.getElementById("app-root").appendChild(app.canvas);
+        document.getElementById("loading").classList.add("hidden");
+
+        const spriteTextures = buildSpriteTextures(app.renderer);
+
+        function buildCelestialTextures(renderer) {
+          const out = {};
+          // Sun: 15x15 radial gradient, light core -> bronze rim
+          {
+            const SZ = 15,
+              c = (SZ - 1) / 2;
+            const g = new PIXI.Graphics();
+            for (let y = 0; y < SZ; y++)
+              for (let x = 0; x < SZ; x++) {
+                const r = Math.hypot(x - c, y - c);
+                let col = null;
+                if (r < 2.1) col = 0xfff9e0;
+                else if (r < 3.6) col = 0xffe98f;
+                else if (r < 5.2) col = 0xf7cf4f;
+                else if (r < 6.4) col = 0xe0a83c;
+                else if (r <= 7.35) col = 0xb97a2e;
+                if (col !== null) g.rect(x, y, 1, 1).fill({ color: col });
+              }
+            const tex = renderer.generateTexture(g);
+            tex.source.scaleMode = "nearest";
+            out.sun = { texture: tex, gridH: SZ };
+            g.destroy();
+          }
+          // Moon phases: SEVEN discrete pixel-art sprites rather than a shadow disc
+          // laid over a full moon (that reads as an eclipse, not a phase). Each is
+          // a real pixel silhouette, picked per frame from the true sun-moon
+          // elongation. Unlit portion is drawn very dark but not invisible, so the
+          // full disc still reads as a body.
+          {
+            const SZ = 13,
+              c = (SZ - 1) / 2,
+              R = 6.2;
+            // lit-region test per phase, s = +1 when the sun is to the RIGHT on screen
+            const phaseTests = {
+              new: () => false,
+              crescent: (dx, s) => dx * s > R * 0.45,
+              half: (dx, s) => dx * s > 0,
+              gibbous: (dx, s) => dx * s > -R * 0.45,
+              full: () => true,
+            };
+            out.moonPhases = {};
+            for (const [name, test] of Object.entries(phaseTests)) {
+              for (const side of [1, -1]) {
+                const g = new PIXI.Graphics();
+                for (let y = 0; y < SZ; y++)
+                  for (let x = 0; x < SZ; x++) {
+                    const dx = x - c,
+                      dy = y - c;
+                    if (Math.hypot(dx, dy) > R) continue;
+                    const lit = test(dx, side);
+                    // subtle relief on the lit side so it isn't a flat fill
+                    const shade = dx * 0.3 * side + dy * 0.45;
+                    const color = lit
+                      ? shade > 2.2
+                        ? 0x8fa0bd
+                        : 0xb9c8dc
+                      : 0x232c3d;
+                    g.rect(x, y, 1, 1).fill({ color });
+                  }
+                const tex = renderer.generateTexture(g);
+                tex.source.scaleMode = "nearest";
+                out.moonPhases[`${name}_${side > 0 ? "r" : "l"}`] = tex;
+                g.destroy();
+              }
+            }
+            out.moonGridH = SZ;
+          }
+          // Crater strip: 2x moon width so it wraps seamlessly while drifting.
+          // Near-invisible bounds rect pins the texture to the full 26x13 frame
+          // (generateTexture trims to drawn bounds otherwise, breaking wrap math).
+          {
+            const g = new PIXI.Graphics();
+            g.rect(0, 0, 26, 13).fill({ color: 0x000000, alpha: 0.004 });
+            const craters = [
+              [3, 4, 1],
+              [7, 8, 2],
+              [11, 3, 1],
+              [15, 7, 1],
+              [18, 4, 2],
+              [22, 9, 1],
+              [24, 5, 1],
+              [5, 10, 1],
+              [13, 10, 1],
+              [20, 11, 1],
+              [9, 5, 1],
+            ];
+            for (const [cx, cy, s] of craters) {
+              g.rect(cx, cy, s, s).fill({ color: 0x5f6f8a, alpha: 0.85 });
+              if (s > 1) g.rect(cx, cy, 1, 1).fill({ color: 0x4c5a73 });
+            }
+            const tex = renderer.generateTexture(g);
+            tex.source.scaleMode = "nearest";
+            out.craterStrip = { texture: tex, w: 26 };
+            g.destroy();
+          }
+          return out;
+        }
+        const celestialTextures = buildCelestialTextures(app.renderer);
+
+        // ---------------- layout constants (recomputed on resize) ----------------
+        // Carried over from the prototype as RELATIONSHIPS, not pixel values:
+        //   - ground peak at 0.845 of screen height
+        //   - ground curve at the viewport edges lands halfway between the peak
+        //     and the bottom of the screen (solved algebraically per aspect ratio)
+        //   - spotlight satellite at 0.5625 of screen height
+        let W,
+          H,
+          groundR,
+          groundCx,
+          groundCy,
+          skyCx,
+          SPOT_Y,
+          HORIZ_SCALE,
+          BELOW_SCALE,
+          BASE_DOT,
+          GROUND_D0,
+          GROUND_BAND,
+          GROUND_LIMB_F;
+        const VIS = (65 * Math.PI) / 180;
+
+        function computeLayout() {
+          W = app.screen.width;
+          H = app.screen.height;
+          const peakY = H * 0.845;
+          const dx = W / 2;
+          const diff = (H - peakY) / 2; // edge sits halfway from peak to bottom
+          groundR = (dx * dx + diff * diff) / (2 * diff);
+          groundCx = W / 2;
+          groundCy = peakY + groundR;
+          skyCx = W / 2;
+          SPOT_Y = H * 0.5625;
+          HORIZ_SCALE = W * 0.95;
+          BELOW_SCALE = H * 0.55;
+          BASE_DOT = Math.max(5, Math.min(W, H) * 0.016); // satellite dot radius scales gently with screen
+          // Perspective ground plane. GROUND_D0 is the "camera setback": the arc
+          // distance at which the surface appears halfway up the ground band.
+          // Derived (not hand-picked) so that near the view center the ground is
+          // BOTH isotropic (no sideways smearing of continents) AND horizontally
+          // matched to the satellite band, keeping a satellite above the land it's
+          // actually over. Further out, 1/(d+d0) foreshortening compresses the
+          // surface toward the horizon exactly like a real ground plane.
+          GROUND_D0 = ((H - peakY) * (Math.PI / 2)) / HORIZ_SCALE;
+          GROUND_BAND = H - peakY;
+          GROUND_LIMB_F = GROUND_D0 / (Math.PI / 2 + GROUND_D0); // depth factor at the real limb (d = 90deg)
+        }
+        computeLayout();
+        app.renderer.on("resize", computeLayout);
+
+        function groundYAt(x) {
+          const dx = x - groundCx;
+          const underRoot = groundR * groundR - dx * dx;
+          if (underRoot < 0) return groundCy;
+          return groundCy - Math.sqrt(underRoot);
+        }
+
+        // ---------------- projection (perspective band) ----------------
+        function project(v) {
+          const vf = vdot(v, curF),
+            vr = vdot(v, curR),
+            vu = vdot(v, curU);
+          const theta = Math.atan2(vr, vf);
+          const phi = Math.atan2(vu, Math.sqrt(vf * vf + vr * vr));
+
+          const tUp = Math.max(0, Math.min(phi / VIS, 1));
+          const x =
+            skyCx + (theta / (Math.PI / 2)) * HORIZ_SCALE * (1 - 0.55 * tUp);
+
+          let y, scale;
+          if (phi >= 0) {
+            const horizonY = groundYAt(x);
+            y = SPOT_Y + tUp * (horizonY - SPOT_Y);
+            scale = 1 - 0.62 * tUp;
+          } else {
+            const tDown = Math.min(-phi / (Math.PI / 3), 1.4);
+            y = SPOT_Y + tDown * BELOW_SCALE;
+            scale = 1 + 0.5 * Math.min(tDown, 1);
+          }
+
+          const behindHorizon = phi > VIS;
+          const offscreen = x < -60 || x > W + 60 || y > H + 60;
+          const alpha = phi >= 0 ? Math.max(1 - 0.55 * tUp, 0.3) : 1;
+          return { x, y, scale, alpha, visible: !behindHorizon && !offscreen };
+        }
+
+        // Layer order (back to front): stars, sun/moon, atmosphere glow, ground,
+        // lattice, satellites. Sun/moon sit BEHIND the ground disc so a "set" sun
+        // is occluded by the earth itself -- sunrise/sunset falls out for free.
+        const starLayer = new PIXI.Container(); // rebuilt on resize; parallax-shifted per frame
+        const celestialLayer = new PIXI.Container();
+        const glowGfx = new PIXI.Graphics(); // atmosphere rim hugging the earth curve; rebuilt on resize
+        const groundGfx = new PIXI.Graphics(); // disc + texture lines, cleared/redrawn per frame
+        const latticeGfx = new PIXI.Graphics(); // cleared/redrawn per frame
+        const satelliteLayer = new PIXI.Container();
+        satelliteLayer.sortableChildren = true; // spotlight satellite renders on top
+        app.stage.addChild(
+          starLayer,
+          celestialLayer,
+          glowGfx,
+          groundGfx,
+          latticeGfx,
+          satelliteLayer,
+        );
+
+        let sunV = subsolarVec(new Date());
+        let moonV = sublunarVec(new Date());
+
+        // Sun: animated heat-wave arcs behind the gradient disc
+        const sunRoot = new PIXI.Container();
+        const sunWaves = new PIXI.Graphics();
+        const sunSprite = new PIXI.Sprite(celestialTextures.sun.texture);
+        sunSprite.anchor.set(0.5);
+        sunRoot.addChild(sunSprite, sunWaves); // particles draw OVER the disc so they read as leaving it
+
+        // Heat particle pool (sprite-local units; disc radius R0 = 7.5)
+        const R0 = 7.5;
+        const heatParticles = Array.from({ length: 46 }, () => ({
+          ang: Math.random() * Math.PI * 2,
+          r: Math.random() * R0 * 1.2,
+          speed: 0.01 + Math.random() * 0.02,
+          maxR: R0 * (1.02 + Math.random() * 0.3),
+          size: 0.34 + Math.random() * 0.18,
+        }));
+
+        // Moon: a phase sprite (swapped per frame from real elongation) plus the
+        // drifting crater strip masked to the disc for the slow-rotation illusion.
+        const moonRoot = new PIXI.Container();
+        const moonDisc = new PIXI.Sprite(celestialTextures.moonPhases.full_r);
+        moonDisc.anchor.set(0.5);
+        const craterStrip = new PIXI.Container();
+        const craterA = new PIXI.Sprite(celestialTextures.craterStrip.texture);
+        const craterB = new PIXI.Sprite(celestialTextures.craterStrip.texture);
+        craterA.anchor.set(0, 0.5);
+        craterB.anchor.set(0, 0.5);
+        craterB.x = -celestialTextures.craterStrip.w;
+        craterStrip.addChild(craterA, craterB);
+        const moonMask = new PIXI.Graphics();
+        moonMask.circle(0, 0, 5.6).fill({ color: 0xffffff });
+        moonRoot.addChild(moonDisc, craterStrip, moonMask);
+        craterStrip.mask = moonMask;
+
+        celestialLayer.addChild(sunRoot, moonRoot);
+
+        // Celestial projection: same angular math as satellites, but anchored high
+        // in the sky (they live beyond the satellite band) with damped horizontal
+        // motion -- distant bodies parallax less. The moon moves a touch more than
+        // the sun (it's closer). Beyond the horizon angle they simply sink below
+        // the earth curve, and the ground disc hides them.
+        function projectCelestial(v, topYFrac, horizDamp, horizonAng) {
+          const vf = vdot(v, curF),
+            vr = vdot(v, curR),
+            vu = vdot(v, curU);
+          const ang = Math.acos(Math.max(-1, Math.min(1, vf)));
+          const theta = Math.atan2(vr, vf);
+          const x = skyCx + (theta / (Math.PI / 2)) * HORIZ_SCALE * horizDamp;
+          const t = ang / horizonAng; // 1.0 = sitting on the horizon; >1 = set
+          const topY = H * topYFrac;
+          const y = topY + t * (groundYAt(x) - topY);
+          return { x, y, visible: t < 1.35 && x > -80 && x < W + 80 };
+        }
+
+        // Starfield: ~1 star per 4500 px^2, drawn once into a single Graphics,
+        // duplicated across three horizontal tiles so the parallax wrap is seamless.
+        // Cheap by design (static geometry, only the container moves per frame).
+        function buildStars() {
+          for (const child of starLayer.children.slice()) child.destroy();
+          starLayer.removeChildren();
+          const g = new PIXI.Graphics();
+          const count = Math.round((W * H) / 4500);
+          for (let tile = -1; tile <= 1; tile++) {
+            // same star pattern per tile (deterministic per rebuild) for seamless wrap
+            let seed = 42;
+            const rand = () => {
+              seed = (seed * 16807) % 2147483647;
+              return seed / 2147483647;
+            };
+            for (let i = 0; i < count; i++) {
+              const sx = tile * W + rand() * W;
+              const sy = rand() * H;
+              const size = 0.5 + rand() * 1.3;
+              const alpha = 0.25 + rand() * 0.55;
+              g.circle(sx, sy, size).fill({
+                color: rand() > 0.85 ? 0xaec6e8 : 0xd8dce6,
+                alpha,
+              });
+            }
+          }
+          starLayer.addChild(g);
+        }
+
+        // Atmosphere: thin light-blue rim following the earth curve exactly,
+        // fading outward into the dark -- concentric strokes just above groundR.
+        function buildGlow() {
+          glowGfx.clear();
+          const layers = 14;
+          const spread = Math.max(18, H * 0.045);
+          for (let i = layers - 1; i >= 0; i--) {
+            const frac = i / layers;
+            glowGfx
+              .circle(groundCx, groundCy, groundR + frac * spread)
+              .stroke({
+                width: spread / layers + 1.5,
+                color: 0x7ec8e3,
+                alpha: 0.16 * (1 - frac) * (1 - frac),
+              });
+          }
+          // bright crisp rim right at the surface line
+          glowGfx
+            .circle(groundCx, groundCy, groundR + 1)
+            .stroke({ width: 2, color: 0xaee3f5, alpha: 0.55 });
+        }
+
+        function buildStaticArt() {
+          buildStars();
+          buildGlow();
+        }
+        buildStaticArt();
+        app.renderer.on("resize", buildStaticArt);
+
+        // Satellite markers: containers with a pixel-art Sprite + a Text label,
+        // built ONCE (textures/Text own GPU resources -- never recreate per frame).
+        for (const s of catalog) {
+          const c = new PIXI.Container();
+          const texInfo = spriteTextures[s.spriteType];
+          const sprite = new PIXI.Sprite(texInfo.texture);
+          sprite.anchor.set(0.5);
+          c.addChild(sprite);
+          const label = new PIXI.Text({
+            text: s.name,
+            style: {
+              fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+              fontSize: 11,
+              fill: 0xd8dce6,
+            },
+          });
+          label.anchor.set(0.5, 0);
+          c.addChild(label);
+          s.marker = c;
+          s.sprite = sprite;
+          s.texInfo = texInfo;
+          s.boost = 0; // spotlight size-up easing state
+
+          // Tap-to-select: tap any satellite and the earth rolls it into the
+          // spotlight. Generous hit radius for touch (sprites can be small at
+          // the horizon; fingers are not).
+          c.eventMode = "static";
+          c.cursor = "pointer";
+          c.hitArea = new PIXI.Circle(0, 0, 30);
+          c.on("pointertap", (ev) => {
+            // The nadir panel sits on top: a tap inside it belongs to the panel,
+            // never to whatever satellite marker happens to lie underneath.
+            if (ev && ev.global && inNadir({ x: ev.global.x, y: ev.global.y }))
+              return;
+            // Two-stage: first tap rolls it into the spotlight; tapping the one
+            // already settled in the spotlight opens the dex.
+            if (s === currentSpotSat && s.boost > 0.4 && !snapping) {
+              openDex(s);
+            } else {
+              snapTarget = s;
+              snapping = true;
+            }
+          });
+
+          satelliteLayer.addChild(c);
+        }
+
+        let viewLon = 0,
+          viewLat = 0; // updated each frame; drives ground texture AND star parallax
+
+        // Surface projection: maps a point on the sphere to the visible ground
+        // band. Near the view center it sits at the bottom of the screen (right
+        // under you); as it recedes it converges onto the horizon curve. Uses the
+        // SAME view frame and horizontal convergence as the satellite band, so
+        // coastlines and satellites always agree about which way is which.
+        // (GROUND_D0 / GROUND_BAND are derived per-resize in computeLayout.)
+
+        // The visible ground is NOT a cone around the view direction: the rim of
+        // such a cone dips behind/below the viewer, where d goes negative, the
+        // 1/(d+d0) term blows up and vertices fly thousands of pixels off, dragging
+        // the fill across the whole scene. The real region is:
+        //   vu >= 0        -> surface ahead of you (its boundary is the screen's
+        //                     bottom edge, so land continues off-screen naturally)
+        //   vf >= cos(80)  -> bounded laterally, which also keeps the lateral angle
+        //                     away from the wraparound at +/-180deg
+        // Both are clipped with boundary-following so a polygon leaving and
+        // re-entering traces the edge instead of closing with a chord.
+        const LATERAL_CLIP = (80 * Math.PI) / 180;
+
+        function clipPoly(verts, inside, cross, arc) {
+          const cut = [];
+          const n = verts.length;
+          for (let i = 0; i < n; i++) {
+            const a = verts[i],
+              b = verts[(i + 1) % n];
+            const ai = inside(a),
+              bi = inside(b);
+            if (ai) cut.push({ v: a, edge: false });
+            if (ai !== bi) cut.push({ v: cross(a, b), edge: true });
+          }
+          if (cut.length < 3) return [];
+          const out = [];
+          for (let i = 0; i < cut.length; i++) {
+            const cur = cut[i],
+              nxt = cut[(i + 1) % cut.length];
+            out.push(cur.v);
+            if (cur.edge && nxt.edge) arc(cur.v, nxt.v, out);
+          }
+          return out;
+        }
+
+        // --- lateral bound: exact points on the cone, rebuilt from the view basis
+        function coneAzimuth(p) {
+          return Math.atan2(vdot(p, curU), vdot(p, curR));
+        }
+        function conePoint(az, cosVis, sinVis) {
+          const ca = Math.cos(az) * sinVis,
+            sa = Math.sin(az) * sinVis;
+          return {
+            x: curF.x * cosVis + curR.x * ca + curU.x * sa,
+            y: curF.y * cosVis + curR.y * ca + curU.y * sa,
+            z: curF.z * cosVis + curR.z * ca + curU.z * sa,
+          };
+        }
+
+        // --- half-space vu >= 0: the boundary is a great circle through the origin,
+        //     so both the crossing point and slerp along it are exact
+        function halfSpaceCross(a, b) {
+          const da = vdot(a, curU),
+            db = vdot(b, curU);
+          const t = da / (da - db);
+          const mx = a.x + (b.x - a.x) * t,
+            my = a.y + (b.y - a.y) * t,
+            mz = a.z + (b.z - a.z) * t;
+          const L = Math.hypot(mx, my, mz) || 1;
+          return { x: mx / L, y: my / L, z: mz / L };
+        }
+
+        function clipGroundPoly(verts) {
+          const cosVis = Math.cos(LATERAL_CLIP);
+          const sinVis = Math.sin(LATERAL_CLIP);
+
+          let poly = clipPoly(
+            verts,
+            (v) => vdot(v, curF) >= cosVis,
+            (a, b) => {
+              const da = vdot(a, curF) - cosVis,
+                db = vdot(b, curF) - cosVis;
+              const t = da / (da - db);
+              const mx = a.x + (b.x - a.x) * t,
+                my = a.y + (b.y - a.y) * t,
+                mz = a.z + (b.z - a.z) * t;
+              const L = Math.hypot(mx, my, mz) || 1;
+              return conePoint(
+                coneAzimuth({ x: mx / L, y: my / L, z: mz / L }),
+                cosVis,
+                sinVis,
+              );
+            },
+            (p, q, out) => {
+              let delta = coneAzimuth(q) - coneAzimuth(p);
+              while (delta > Math.PI) delta -= 2 * Math.PI;
+              while (delta < -Math.PI) delta += 2 * Math.PI;
+              const steps = Math.min(24, Math.round(Math.abs(delta) / 0.12));
+              const a0 = coneAzimuth(p);
+              for (let s = 1; s < steps; s++)
+                out.push(conePoint(a0 + delta * (s / steps), cosVis, sinVis));
+            },
+          );
+          if (poly.length < 3) return [];
+
+          poly = clipPoly(
+            poly,
+            (v) => vdot(v, curU) >= 0,
+            halfSpaceCross,
+            (p, q, out) => {
+              const ang = Math.acos(Math.max(-1, Math.min(1, vdot(p, q))));
+              const steps = Math.min(24, Math.round(ang / 0.12));
+              for (let s = 1; s < steps; s++) out.push(slerp(p, q, s / steps));
+            },
+          );
+          return poly;
+        }
+
+        function projectGround(v) {
+          const vf = vdot(v, curF),
+            vr = vdot(v, curR),
+            vu = vdot(v, curU);
+          // d = arc distance "away" from the viewer, l = lateral arc offset
+          let d = Math.atan2(vu, Math.sqrt(vf * vf + vr * vr));
+          const l = Math.atan2(vr, vf);
+          // Clamp just behind the viewer so the denominator can't cross zero;
+          // those points land below the screen edge, which is where they belong.
+          if (d < -0.45 * GROUND_D0) d = -0.45 * GROUND_D0;
+          const inv = 1 / (d + GROUND_D0);
+          const x = groundCx + l * GROUND_BAND * inv;
+          const horizonY = groundYAt(x);
+          // The 1/(d+d0) falloff only reaches the horizon as d -> infinity, but the
+          // real limb is at d = 90deg, so raw falloff leaves the land floating a
+          // dozen-plus pixels BELOW the horizon line. Renormalise the depth factor
+          // so d = 0 sits at the screen bottom and d = 90deg lands exactly on the
+          // horizon -- land now emerges from the limb instead of under it.
+          const f = GROUND_D0 * inv;
+          const t = (f - GROUND_LIMB_F) / (1 - GROUND_LIMB_F);
+          const y = horizonY + (H - horizonY) * Math.max(0, t);
+          return { x, y };
+        }
+
+        function drawGround() {
+          groundGfx.clear();
+          groundGfx
+            .circle(groundCx, groundCy, groundR)
+            .fill({ color: 0x2f4a63 }); // ocean
+
+          viewLon = Math.atan2(curF.y, curF.x);
+          viewLat = Math.asin(Math.max(-1, Math.min(1, curF.z)));
+
+          for (const poly of landPolys) {
+            // cheap reject: centroid further than the lateral bound plus its own reach
+            const cAng = Math.acos(
+              Math.max(-1, Math.min(1, vdot(poly.centroid, curF))),
+            );
+            if (cAng > LATERAL_CLIP + poly.radius) continue;
+
+            const clipped = clipGroundPoly(poly.verts);
+            if (clipped.length < 3) continue;
+
+            let started = false;
+            for (const v of clipped) {
+              const p = projectGround(v);
+              if (!started) {
+                groundGfx.moveTo(p.x, p.y);
+                started = true;
+              } else {
+                groundGfx.lineTo(p.x, p.y);
+              }
+            }
+            groundGfx.fill({ color: 0x5f7a4a }); // land
+            groundGfx.stroke({ width: 1, color: 0x7d9862, alpha: 0.8 }); // coastline
+          }
+
+          // A few faint meridians for motion cue, still driven by the same frame.
+          const N = 12;
+          for (let i = 0; i < N; i++) {
+            const a = viewLon + i * ((2 * Math.PI) / N);
+            groundGfx
+              .moveTo(groundCx, groundCy)
+              .lineTo(
+                groundCx + Math.cos(a) * groundR,
+                groundCy + Math.sin(a) * groundR,
+              )
+              .stroke({ width: 1, color: 0x486b85, alpha: 0.18 });
+          }
+        }
+
+        let currentSpotSat = null; // module-scope mirror of the spotlight satellite, read by the tap handler
+
+        function drawFrame() {
+          drawGround();
+
+          // Star parallax: slight counter-drift against the roam direction, wrapped
+          // seamlessly across the three tiles. Deep space moves less than the
+          // world -- that difference is what sells the depth.
+          const wrap = ((viewLon / (2 * Math.PI)) * W * 0.35) % W;
+          starLayer.x = -((wrap % W) + W) % W;
+          starLayer.y = (viewLat / (Math.PI / 2)) * H * 0.06;
+
+          // Spotlight size-up: the satellite holding the spotlight eases bigger
+          // for appreciation while the view is settled; the moment a drag starts,
+          // everyone eases back to standard size. Not a zoom -- a presentation.
+          let spotSat = null;
+          if (snapTarget && snapTarget.ok) {
+            spotSat = snapTarget;
+          } else {
+            let best = Infinity;
+            for (const s of catalog) {
+              if (!s.ok) continue;
+              const ang = Math.acos(Math.max(-1, Math.min(1, vdot(s.v, curF))));
+              if (ang < best) {
+                best = ang;
+                spotSat = s;
+              }
+            }
+            if (best > 0.3) spotSat = null; // nothing close enough to count as "on the spot"
+          }
+          currentSpotSat = spotSat;
+
+          for (const s of catalog) {
+            if (!s.ok) {
+              s.marker.visible = false;
+              continue;
+            }
+            const boostTarget = !dragging && s === spotSat ? 0.65 : 0;
+            s.boost += (boostTarget - s.boost) * 0.12; // ease toward target
+
+            const p = project(s.v);
+            s._proj = p;
+            s.marker.visible = p.visible;
+            if (!p.visible) continue;
+            s.marker.x = Math.round(p.x);
+            s.marker.y = Math.round(p.y);
+            s.marker.alpha = p.alpha;
+            // Integer pixel snapping: every art pixel renders as a uniform square.
+            // Depth shrink quantizes into discrete sizes -- deliberate, reads as
+            // authentic pixel art rather than smooth-scaled (blurry) sprites.
+            const rawScale =
+              ((BASE_DOT * 3.4) / s.texInfo.gridH) * p.scale * (1 + s.boost);
+            const spriteScale = Math.max(1, Math.round(rawScale));
+            s.sprite.scale.set(spriteScale);
+            const label = s.marker.children[1];
+            label.scale.set(Math.max(p.scale, 0.55));
+            label.y = (s.texInfo.gridH / 2) * spriteScale + 5;
+            s.marker.zIndex = s === spotSat ? 1000 : Math.round(p.scale * 100);
+          }
+
+          // Stage-clearing: while a satellite holds the spotlight, neighbors inside
+          // its personal space are eased outward to a clear radius and slightly
+          // dimmed, so the spotlight is never overlapped (real orbital clusters
+          // like Landsat 8/9 or the Sentinel pairs overlap constantly otherwise).
+          // Blends in/out with the size-up boost -- drag again and everyone relaxes
+          // back to true pinned positions. A deliberate, temporary readability-over-
+          // fidelity trade.
+          if (
+            spotSat &&
+            spotSat.ok &&
+            spotSat.marker.visible &&
+            spotSat.boost > 0.01
+          ) {
+            const blend = Math.min(spotSat.boost / 0.65, 1);
+            const sx = spotSat.marker.x,
+              sy = spotSat.marker.y;
+            const spotHalf =
+              (spotSat.sprite.scale.x * spotSat.texInfo.gridW) / 2;
+            for (const s of catalog) {
+              if (s === spotSat || !s.ok || !s.marker.visible) continue;
+              const otherHalf = (s.sprite.scale.x * s.texInfo.gridW) / 2;
+              const clearR = spotHalf + otherHalf + 14;
+              let dx = s.marker.x - sx,
+                dy = s.marker.y - sy;
+              let d = Math.hypot(dx, dy);
+              if (d >= clearR) continue;
+              if (d < 1) {
+                dx = Math.cos(s.norad_id);
+                dy = Math.sin(s.norad_id);
+                d = 1;
+              } // exact overlap: deterministic per-satellite direction
+              const push = (clearR - d) * blend;
+              s.marker.x = Math.round(s.marker.x + (dx / d) * push);
+              s.marker.y = Math.round(s.marker.y + (dy / d) * push);
+              s.marker.alpha *= 1 - 0.3 * blend;
+            }
+          }
+
+          latticeGfx.clear();
+          for (const [a, b] of edgePairs) {
+            const pa = a._proj,
+              pb = b._proj;
+            if (!pa || !pb) continue;
+            if (!pa.visible && !pb.visible) continue;
+            // Use marker positions (which include stage-clearing displacement) when
+            // on screen, raw projection otherwise -- lines stay attached to sprites.
+            const ax = pa.visible ? a.marker.x : pa.x,
+              ay = pa.visible ? a.marker.y : pa.y;
+            const bx = pb.visible ? b.marker.x : pb.x,
+              by = pb.visible ? b.marker.y : pb.y;
+            latticeGfx
+              .moveTo(ax, ay)
+              .lineTo(bx, by)
+              .stroke({
+                width: 1,
+                color: 0xd8dce6,
+                alpha: ((pa.alpha + pb.alpha) / 2) * 0.4,
+              });
+          }
+        }
+
+        // ---------------- satellite dex ----------------
+        // User journey: tap a satellite -> it rolls into the spotlight; tap the
+        // satellite ALREADY in the spotlight -> the dex opens. Roam state is never
+        // reset by opening/closing, so people aren't punished for looking.
+        const dexEl = document.getElementById("dex");
+        let dexSat = null;
+
+        const TYPE_LABELS = {
+          sar: "SAR / radar",
+          optical: "Optical imager",
+          geo: "Geostationary",
+          generic: "Multi-sensor",
+        };
+
+        function renderDexSprite(sat) {
+          const grid = SPRITE_GRIDS[sat.spriteType];
+          const cols = grid[0].length,
+            rows = grid.length;
+          const cv = document.getElementById("dex-sprite");
+          const SCALE = 8;
+          cv.width = cols * SCALE;
+          cv.height = rows * SCALE;
+          const ctx = cv.getContext("2d");
+          ctx.imageSmoothingEnabled = false;
+          ctx.clearRect(0, 0, cv.width, cv.height);
+          const hex = (n) => "#" + n.toString(16).padStart(6, "0");
+          grid.forEach((row, y) => {
+            [...row].forEach((ch, x) => {
+              if (ch === ".") return;
+              ctx.fillStyle = hex(PALETTE[ch]);
+              ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+            });
+          });
+        }
+
+        function updateDexLive() {
+          if (!dexSat || !dexEl.classList.contains("open")) return;
+          const set = (id, val) => {
+            document.getElementById(id).textContent = val;
+          };
+          if (dexSat.ok) {
+            const lat = dexSat.latDeg,
+              lon = dexSat.lonDeg;
+            set(
+              "dex-lat",
+              `${Math.abs(lat).toFixed(3)}° ${lat >= 0 ? "N" : "S"}`,
+            );
+            set(
+              "dex-lon",
+              `${Math.abs(lon).toFixed(3)}° ${lon >= 0 ? "E" : "W"}`,
+            );
+            set("dex-alt", `${dexSat.altKm.toFixed(1)} km`);
+            set("dex-status", "Tracking");
+          } else {
+            set("dex-status", "No current fix");
+          }
+        }
+
+        function openDex(sat) {
+          dexSat = sat;
+          const set = (id, val) => {
+            document.getElementById(id).textContent = val;
+          };
+          const m = sat.meta || {};
+          set("dex-name", sat.name);
+          set("dex-agency", m.agency || "—");
+          set("dex-desc", m.description || "");
+          set("dex-launch", m.launch_year || "—");
+          set("dex-norad", sat.norad_id);
+          set("dex-datatype", m.data_type || "—");
+          set(
+            "dex-tleage",
+            sat.tle_age_days != null ? `${sat.tle_age_days} days` : "—",
+          );
+          set("dex-type", TYPE_LABELS[sat.spriteType] || "Satellite");
+          set("dex-note", m.status_note || "");
+          document.getElementById("dex-note").style.display = m.status_note
+            ? ""
+            : "none";
+          renderDexSprite(sat);
+          updateDexLive();
+          dexEl.classList.add("open");
+          dexEl.setAttribute("aria-hidden", "false");
+          document.getElementById("dex-close").focus();
+        }
+
+        function closeDex() {
+          dexEl.classList.remove("open");
+          dexEl.setAttribute("aria-hidden", "true");
+          dexSat = null;
+          app.canvas.focus();
+        }
+
+        document
+          .getElementById("dex-close")
+          .addEventListener("click", closeDex);
+        dexEl.addEventListener("click", (e) => {
+          if (e.target === dexEl) closeDex();
+        }); // click the backdrop to dismiss
+        window.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && dexEl.classList.contains("open"))
+            closeDex();
+        });
+        setInterval(updateDexLive, 1000);
+        // --- nadir panel drag: steer the globe from the top-down map. Lets you
+        // navigate to a place ("what's over Malta right now?") instead of only
+        // hunting satellite by satellite.
+        let nadirDragging = false,
+          nlx = 0,
+          nly = 0;
+
+        function canvasPoint(e) {
+          const r = app.canvas.getBoundingClientRect();
+          return { x: e.clientX - r.left, y: e.clientY - r.top };
+        }
+        function inNadir(pt) {
+          return (
+            nadirLayer.visible &&
+            pt.x >= nadirRect.px &&
+            pt.x <= nadirRect.px + nadirRect.size &&
+            pt.y >= nadirRect.py &&
+            pt.y <= nadirRect.py + nadirRect.size + 16
+          );
+        }
+        function nadirSteer(dx, dy) {
+          // Rotate the whole view frame so the map content follows the finger:
+          // drag right -> centre moves west, drag down -> centre moves north.
+          let east = { x: -baseF.y, y: baseF.x, z: 0 };
+          const eL = Math.hypot(east.x, east.y, east.z);
+          if (eL < 1e-6) return;
+          east = { x: east.x / eL, y: east.y / eL, z: east.z / eL };
+          const north = {
+            x: baseF.y * east.z - baseF.z * east.y,
+            y: baseF.z * east.x - baseF.x * east.z,
+            z: baseF.x * east.y - baseF.y * east.x,
+          };
+          const R = nadirRect.R || 1;
+          for (const [axis, ang] of [
+            [north, -dx / R],
+            [east, -dy / R],
+          ]) {
+            if (!ang) continue;
+            baseF = rotAxis(baseF, axis, ang);
+            baseR = rotAxis(baseR, axis, ang);
+            baseU = rotAxis(baseU, axis, ang);
+          }
+          curF = baseF;
+          curR = baseR;
+          curU = baseU;
+        }
+
+        app.canvas.addEventListener("pointerdown", (e) => {
+          const pt = canvasPoint(e);
+          if (inNadir(pt)) {
+            nadirDragging = true;
+            snapping = false;
+            snapTarget = null;
+            nlx = pt.x;
+            nly = pt.y;
+            return; // the panel takes this gesture; the world drag must not also fire
+          }
+          // Press does NOT immediately mean drag: a tap must leave the world (and
+          // any stage-cleared satellites) completely still, or the target slides
+          // out from under the finger and the tap never registers on it.
+          pendingDown = true;
+          dsx = e.clientX;
+          dsy = e.clientY;
+        });
+        window.addEventListener("pointermove", (e) => {
+          if (nadirDragging) {
+            const pt = canvasPoint(e);
+            nadirSteer(pt.x - nlx, pt.y - nly); // incremental, so rotation accumulates correctly
+            nlx = pt.x;
+            nly = pt.y;
+            return;
+          }
+          if (!pendingDown && !dragging) return;
+          const dx = e.clientX - dsx,
+            dy = e.clientY - dsy;
+          if (!dragging) {
+            if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+            dragging = true;
+            snapping = false;
+            snapTarget = null; // now it's a real drag: free-roam takes over
+            app.canvas.classList.add("dragging");
+          }
+          const yaw = -dx * SENS;
+          const pitch = -dy * SENS; // scroll up = earth rolls backward, spotlight recedes into horizon
+          const F1 = rotAxis(baseF, baseU, yaw);
+          const R1 = rotAxis(baseR, baseU, yaw);
+          const F2 = rotAxis(F1, R1, pitch);
+          const U2 = rotAxis(baseU, R1, pitch);
+          curF = F2;
+          curR = R1;
+          curU = U2;
+        });
+        window.addEventListener("pointerup", () => {
+          // NOTE: snapTarget is deliberately NOT cleared here. On a tap, Pixi's
+          // canvas-level tap handler sets it before this window-level pointerup
+          // runs (canvas bubbles before window), and pointerdown no longer clears
+          // it -- only an actual drag (threshold crossed) does.
+          pendingDown = false;
+          if (nadirDragging) {
+            nadirDragging = false;
+            snapping = true;
+          } // settle on whatever is nearest where you steered
+          if (dragging) {
+            baseF = curF;
+            baseR = curR;
+            baseU = curU;
+            snapping = true;
+          }
+          dragging = false;
+          app.canvas.classList.remove("dragging");
+        });
+
+        // wheel = roam too (trackpads pan naturally); never zoom
+        app.canvas.addEventListener(
+          "wheel",
+          (e) => {
+            e.preventDefault();
+            const yaw = -e.deltaX * SENS * 0.4;
+            const pitch = -e.deltaY * SENS * 0.4;
+            const F1 = rotAxis(baseF, baseU, yaw);
+            const R1 = rotAxis(baseR, baseU, yaw);
+            baseF = rotAxis(F1, R1, pitch);
+            baseU = rotAxis(baseU, R1, pitch);
+            baseR = R1;
+            curF = baseF;
+            curR = baseR;
+            curU = baseU;
+            snapping = true;
+          },
+          { passive: false },
+        );
+
+        // ---------------- nadir view (top-right) ----------------
+        // From the horizon the surface is seen almost edge-on, so geography is
+        // unreadable by geometry, not by bug. This panel shows the same land from
+        // straight overhead -- an orthographic hemisphere centred on whatever the
+        // spotlight satellite is currently above, which is literally the view that
+        // satellite has. Graticule included so position is actually readable.
+        const nadirLayer = new PIXI.Container();
+        const nadirGfx = new PIXI.Graphics();
+        const nadirTitle = new PIXI.Text({
+          text: "",
+          style: {
+            fontFamily: "ui-monospace, Menlo, Consolas, monospace",
+            fontSize: 11,
+            fill: 0xd8dce6,
+          },
+        });
+        const nadirLabel = new PIXI.Text({
+          text: "",
+          style: {
+            fontFamily: "ui-monospace, Menlo, Consolas, monospace",
+            fontSize: 10,
+            fill: 0x8891a8,
+          },
+        });
+        nadirLayer.addChild(nadirGfx, nadirTitle, nadirLabel);
+        app.stage.addChild(nadirLayer);
+
+        // Panel rect, published so pointer handlers can hit-test it.
+        const nadirRect = { px: 0, py: 0, size: 0, cx: 0, cy: 0, R: 1 };
+
+        function drawNadir(sat) {
+          // Centred on the VIEW DIRECTION, never on a possibly-null spotlight: the
+          // snap aligns curF with the selected satellite, so a spotlighted satellite
+          // still sits dead centre -- but the panel stays alive and moves
+          // continuously while dragging instead of blinking out.
+          nadirLayer.visible = true;
+          nadirGfx.clear();
+
+          const size = Math.max(120, Math.min(210, Math.min(W, H) * 0.22));
+          const pad = Math.max(12, Math.min(W, H) * 0.02);
+          const px = W - size - pad,
+            py = pad;
+          const R = size / 2 - 10;
+          const cx = px + size / 2,
+            cy = py + size / 2 + 8;
+
+          nadirRect.px = px;
+          nadirRect.py = py;
+          nadirRect.size = size;
+          nadirRect.cx = cx;
+          nadirRect.cy = cy;
+          nadirRect.R = R;
+
+          nadirGfx
+            .roundRect(px, py, size, size + 16, 8)
+            .fill({ color: 0x0d1420, alpha: 0.88 })
+            .stroke({ width: 1, color: 0x2b3852 });
+          nadirGfx.circle(cx, cy, R).fill({ color: 0x2f4a63 });
+
+          const up = curF;
+          let east = { x: -up.y, y: up.x, z: 0 };
+          let eL = Math.hypot(east.x, east.y, east.z);
+          if (eL < 1e-6) {
+            east = { x: 1, y: 0, z: 0 };
+            eL = 1;
+          }
+          east = { x: east.x / eL, y: east.y / eL, z: east.z / eL };
+          const north = {
+            x: up.y * east.z - up.z * east.y,
+            y: up.z * east.x - up.x * east.z,
+            z: up.x * east.y - up.y * east.x,
+          };
+          const dotv = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+          const orth = (v) => ({
+            x: cx + dotv(v, east) * R,
+            y: cy - dotv(v, north) * R,
+          });
+
+          for (const poly of landPolys) {
+            const cA = Math.acos(
+              Math.max(-1, Math.min(1, dotv(poly.centroid, up))),
+            );
+            if (cA > Math.PI / 2 + poly.radius) continue;
+            const cut = [];
+            const vs = poly.verts,
+              n = vs.length;
+            for (let i = 0; i < n; i++) {
+              const a = vs[i],
+                b = vs[(i + 1) % n];
+              const da = dotv(a, up),
+                db = dotv(b, up);
+              const ai = da >= 0,
+                bi = db >= 0;
+              if (ai) cut.push({ v: a, edge: false });
+              if (ai !== bi) {
+                const t = da / (da - db);
+                const mx = a.x + (b.x - a.x) * t,
+                  my = a.y + (b.y - a.y) * t,
+                  mz = a.z + (b.z - a.z) * t;
+                const L = Math.hypot(mx, my, mz) || 1;
+                cut.push({
+                  v: { x: mx / L, y: my / L, z: mz / L },
+                  edge: true,
+                });
+              }
+            }
+            if (cut.length < 3) continue;
+            const pts = [];
+            for (let i = 0; i < cut.length; i++) {
+              const cur = cut[i],
+                nxt = cut[(i + 1) % cut.length];
+              pts.push(cur.v);
+              if (cur.edge && nxt.edge) {
+                const ang = Math.acos(
+                  Math.max(-1, Math.min(1, dotv(cur.v, nxt.v))),
+                );
+                const steps = Math.min(20, Math.round(ang / 0.12));
+                for (let s = 1; s < steps; s++)
+                  pts.push(slerp(cur.v, nxt.v, s / steps));
+              }
+            }
+            if (pts.length < 3) continue;
+            pts.forEach((v, i) => {
+              const p = orth(v);
+              if (i === 0) nadirGfx.moveTo(p.x, p.y);
+              else nadirGfx.lineTo(p.x, p.y);
+            });
+            nadirGfx
+              .fill({ color: 0x5f7a4a })
+              .stroke({ width: 1, color: 0x7d9862, alpha: 0.7 });
+          }
+
+          for (let lat = -60; lat <= 60; lat += 30) {
+            let started = false;
+            for (let lon = -180; lon <= 180; lon += 6) {
+              const v = latLonToVec(lat, lon);
+              if (dotv(v, up) < 0) {
+                started = false;
+                continue;
+              }
+              const p = orth(v);
+              if (!started) {
+                nadirGfx.moveTo(p.x, p.y);
+                started = true;
+              } else nadirGfx.lineTo(p.x, p.y);
+            }
+            nadirGfx.stroke({ width: 1, color: 0x8891a8, alpha: 0.22 });
+          }
+          for (let lon = -180; lon < 180; lon += 30) {
+            let started = false;
+            for (let lat = -90; lat <= 90; lat += 6) {
+              const v = latLonToVec(lat, lon);
+              if (dotv(v, up) < 0) {
+                started = false;
+                continue;
+              }
+              const p = orth(v);
+              if (!started) {
+                nadirGfx.moveTo(p.x, p.y);
+                started = true;
+              } else nadirGfx.lineTo(p.x, p.y);
+            }
+            nadirGfx.stroke({ width: 1, color: 0x8891a8, alpha: 0.22 });
+          }
+
+          // every satellite currently over this hemisphere, so you can see what's
+          // nearby and steer toward it rather than hunting blind
+          for (const s of catalog) {
+            if (!s.ok || dotv(s.v, up) <= 0) continue;
+            const p = orth(s.v);
+            const isSpot = s === sat;
+            nadirGfx
+              .circle(p.x, p.y, isSpot ? 3.2 : 2.2)
+              .fill({
+                color: isSpot ? 0xf2b84b : 0xd8dce6,
+                alpha: isSpot ? 1 : 0.62,
+              });
+          }
+
+          nadirGfx
+            .circle(cx, cy, R)
+            .stroke({ width: 1, color: 0x7ec8e3, alpha: 0.5 });
+          nadirGfx
+            .moveTo(cx - 7, cy)
+            .lineTo(cx + 7, cy)
+            .moveTo(cx, cy - 7)
+            .lineTo(cx, cy + 7)
+            .stroke({ width: 1, color: 0xf2b84b, alpha: 0.9 });
+
+          nadirTitle.text = sat ? sat.name : "FREE ROAM";
+          nadirTitle.x = px + 10;
+          nadirTitle.y = py + 6;
+          const la =
+            (Math.asin(Math.max(-1, Math.min(1, up.z))) * 180) / Math.PI;
+          const lo = (Math.atan2(up.y, up.x) * 180) / Math.PI;
+          nadirLabel.text = `${Math.abs(la).toFixed(1)}\u00b0${la >= 0 ? "N" : "S"}  ${Math.abs(lo).toFixed(1)}\u00b0${lo >= 0 ? "E" : "W"}`;
+          nadirLabel.x = px + 10;
+          nadirLabel.y = py + size + 1;
+        }
+
+        // ---------------- main loop ----------------
+        let nadirTick = 0;
+        app.ticker.add(() => {
+          if (snapping) applySnapStep();
+          drawFrame();
+          if (nadirDragging || snapping || dragging || nadirTick++ % 6 === 0)
+            drawNadir(currentSpotSat);
+
+          const nowMs = performance.now();
+
+          // Sun: big, high, slow parallax (farthest body). ~5-6x the satellite scale.
+          const sunP = projectCelestial(sunV, 0.16, 0.58, 100 * D2R);
+          sunRoot.visible = sunP.visible;
+          if (sunP.visible) {
+            sunRoot.x = Math.round(sunP.x);
+            sunRoot.y = Math.round(sunP.y);
+            sunRoot.scale.set(
+              Math.max(
+                6,
+                Math.round((BASE_DOT * 24) / celestialTextures.sun.gridH),
+              ),
+            );
+            // Heat emission: single small pixels drifting outward from the core in
+            // random directions, fading as they go -- a sun radiating heat rather
+            // than drawing rings around itself. Pixels are ~1/3 the old stroke
+            // weight, and particles recycle from the center so the effect is
+            // continuous but never patterned.
+            sunWaves.clear();
+            for (const p of heatParticles) {
+              p.r += p.speed;
+              if (p.r > p.maxR) {
+                p.r = 0.6 + Math.random() * 1.2;
+                p.ang = Math.random() * Math.PI * 2;
+                p.speed = 0.01 + Math.random() * 0.02;
+                p.maxR = R0 * (1.02 + Math.random() * 0.3);
+                p.size = 0.34 + Math.random() * 0.18;
+              }
+              const f = p.r / p.maxR;
+              // invisible inside the bright core, brightest as it clears the rim,
+              // gone by the time it reaches its own max -- no popping at the edge
+              const emerge = Math.min(1, Math.max(0, (f - 0.42) / 0.3));
+              const alpha = emerge * (1 - f * f) * 0.85;
+              if (alpha < 0.03) continue;
+              const x = Math.round(Math.cos(p.ang) * p.r * 2) / 2;
+              const y = Math.round(Math.sin(p.ang) * p.r * 2) / 2;
+              sunWaves
+                .rect(x, y, p.size, p.size)
+                .fill({ color: f > 0.8 ? 0xe0a83c : 0xffd88a, alpha });
+            }
+          }
+
+          // Moon: ~3x the satellite scale, slightly quicker parallax (closer body),
+          // craters drifting across the face on a ~2.5 min cycle.
+          // SAME anchor and damping as the sun -- different values would distort
+          // their true angular separation, which matters most near new moon when
+          // they genuinely sit close together in the sky.
+          const moonP = projectCelestial(moonV, 0.16, 0.58, 100 * D2R);
+          moonRoot.visible = moonP.visible;
+          if (moonP.visible) {
+            moonRoot.x = Math.round(moonP.x);
+            moonRoot.y = Math.round(moonP.y);
+            moonRoot.scale.set(
+              Math.max(
+                3,
+                Math.round((BASE_DOT * 10) / celestialTextures.moonGridH),
+              ),
+            );
+            const stripW = celestialTextures.craterStrip.w;
+            const drift = ((nowMs / 150000) % 1) * stripW;
+            craterStrip.x = drift - stripW / 2;
+
+            // REAL phase: elongation between the sun and moon direction vectors.
+            // 0 = new moon, PI = full moon. Quantized to the discrete pixel-art
+            // phase sprites, lit from whichever side the sun actually is on screen.
+            const elong = Math.acos(
+              Math.max(-1, Math.min(1, vdot(sunV, moonV))),
+            );
+            const frac = elong / Math.PI; // 0 new -> 1 full
+            let phaseName;
+            if (frac < 0.1) phaseName = "new";
+            else if (frac < 0.34) phaseName = "crescent";
+            else if (frac < 0.62) phaseName = "half";
+            else if (frac < 0.88) phaseName = "gibbous";
+            else phaseName = "full";
+            const litSide = sunP.x >= moonP.x ? "r" : "l";
+            const tex = celestialTextures.moonPhases[`${phaseName}_${litSide}`];
+            if (moonDisc.texture !== tex) moonDisc.texture = tex;
+            // craters only show over the lit portion; near-new they'd float on black
+            craterStrip.alpha =
+              Math.min(1, Math.max(0, (frac - 0.12) / 0.35)) * 0.85;
+          }
+        });
+
+        setInterval(() => {
+          const now = new Date();
+          propagateAll(now);
+          rebuildLattice();
+          sunV = subsolarVec(now);
+          moonV = sublunarVec(now);
+        }, 1000);
+      })();
+    </script>
+  </body>
+</html>

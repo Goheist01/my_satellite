@@ -5,7 +5,7 @@ on:
     # Every 6 hours, offset 17 minutes past the hour rather than exactly on
     # it -- GitHub's own guidance is that the top of the hour is the busiest
     # queue window and schedules there see the most delay.
-    - cron: '17 3,9,15,21 * * *'
+    - cron: "17 3,9,15,21 * * *"
   workflow_dispatch: # lets you trigger a run manually from the Actions tab, for testing
 
 permissions:
@@ -15,11 +15,11 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install dependencies
         run: pip install -r requirements.txt

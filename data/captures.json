@@ -10,5 +10,11 @@
     "resolved_at": "2026-08-19T20:37:48.783687+00:00",
     "scene_id": "S2B_28XDL_20260819_0_L2A",
     "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/28/X/DL/2026/8/S2B_28XDL_20260819_0_L2A/preview.jpg"
+  },
+  "60989": {
+    "captured_at": "2026-08-14T17:30:03.757000Z",
+    "resolved_at": "2026-08-20T04:02:24.013024+00:00",
+    "scene_id": "S2C_15UVQ_20260814_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/15/U/VQ/2026/8/S2C_15UVQ_20260814_0_L2A/preview.jpg"
   }
 }

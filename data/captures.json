@@ -1,9 +1,9 @@
 {
   "40697": {
-    "captured_at": "2026-08-18T09:48:57.177000Z",
-    "resolved_at": "2026-08-19T20:37:47.793528+00:00",
-    "scene_id": "S2A_34TCN_20260818_1_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/34/T/CN/2026/8/S2A_34TCN_20260818_1_L2A/preview.jpg"
+    "captured_at": "2026-08-17T15:11:25.846000Z",
+    "resolved_at": "2026-08-20T15:21:15.970824+00:00",
+    "scene_id": "S2A_25XDE_20260817_3_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/25/X/DE/2026/8/S2A_25XDE_20260817_3_L2A/preview.jpg"
   },
   "42063": {
     "captured_at": "2026-08-19T14:00:25.146000Z",

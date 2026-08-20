@@ -6,7 +6,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
     />
-    <title>EO Satellite Orbit Visualizer</title>
+    <title>My_Satellite</title>
+    <!-- Text-subsetted: only the glyphs actually used in "My_Satellite" are
+         downloaded, not the full font family. Keeps this to a few KB, which
+         matters given the project's mobile data budget. If the title text
+         ever changes, update the &text= param to match or it'll silently
+         fall back to the default font for any new character. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&text=My_Satellite&display=swap"
+      rel="stylesheet"
+    />
     <script
       crossorigin
       src="https://cdn.jsdelivr.net/npm/pixi.js@8.19.0/dist/pixi.min.js"
@@ -226,11 +237,506 @@
           grid-template-columns: 1fr 1fr;
         }
       }
+      /* ---- Start screen (also the audio unlock gate) ---- */
+      #start {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            ellipse 130% 75% at 50% 112%,
+            #17304d 0%,
+            rgba(8, 14, 28, 0) 64%
+          ),
+          linear-gradient(180deg, #04070f 0%, #070d1c 55%, #0a1526 100%);
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        color: #d8dce6;
+        text-align: center;
+        padding: clamp(26px, 7vh, 62px) 22px;
+        box-sizing: border-box;
+        transition:
+          opacity 700ms ease,
+          visibility 0s linear 700ms;
+      }
+      #start.gone {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      /* Two star layers at different depths -- the far one barely moves,
+         which is what sells distance. Pure CSS, no image assets. */
+      .star-layer {
+        position: absolute;
+        inset: -60%;
+        pointer-events: none;
+      }
+      #stars-far {
+        z-index: 0;
+        background-image:
+          radial-gradient(1px 1px at 12% 22%, #7f9dc4 50%, transparent 51%),
+          radial-gradient(1px 1px at 63% 12%, #6d8cb5 50%, transparent 51%),
+          radial-gradient(1px 1px at 33% 61%, #8fa9cc 50%, transparent 51%),
+          radial-gradient(1px 1px at 88% 47%, #6b8ab3 50%, transparent 51%),
+          radial-gradient(1px 1px at 47% 88%, #7e9cc2 50%, transparent 51%),
+          radial-gradient(1px 1px at 74% 74%, #5f7ea8 50%, transparent 51%);
+        background-size: 190px 190px;
+        opacity: 0.45;
+        animation: drift-far 220s linear infinite;
+      }
+      #stars-near {
+        z-index: 1;
+        background-image:
+          radial-gradient(1.6px 1.6px at 20% 30%, #dceaff 50%, transparent 51%),
+          radial-gradient(1.4px 1.4px at 70% 20%, #b9d6f2 50%, transparent 51%),
+          radial-gradient(1.8px 1.8px at 41% 72%, #ffffff 50%, transparent 51%),
+          radial-gradient(1.3px 1.3px at 86% 58%, #cfe4ff 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 9% 84%, #eaf3ff 50%, transparent 51%);
+        background-size: 420px 420px;
+        opacity: 0.75;
+        animation: drift-near 130s linear infinite;
+      }
+      @keyframes drift-far {
+        from {
+          transform: translate3d(0, 0, 0);
+        }
+        to {
+          transform: translate3d(-190px, -95px, 0);
+        }
+      }
+      @keyframes drift-near {
+        from {
+          transform: translate3d(0, 0, 0);
+        }
+        to {
+          transform: translate3d(-420px, -210px, 0);
+        }
+      }
+
+      /* Roaming satellite. Sits at z-index 2 -- ABOVE the stars, BELOW the
+         title (z-index 4), so it slides behind the letterforms. Position is
+         driven from JS (see the chase-satellite block in <script>) so it can
+         flee the cursor; only the bob/rotation stay as CSS on the child. */
+      #start-sat {
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        left: 0;
+        width: 60px;
+        pointer-events: none;
+        will-change: transform;
+      }
+      #start-sat .sat-bob {
+        display: block;
+        animation: sat-bob 9s ease-in-out infinite;
+      }
+      #start-sat svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        opacity: 0.9;
+        filter: drop-shadow(0 0 14px rgba(96, 156, 214, 0.32));
+      }
+      @keyframes sat-bob {
+        0%,
+        100% {
+          transform: translateY(-6px);
+        }
+        50% {
+          transform: translateY(6px);
+        }
+      }
+
+      #start-top {
+        position: relative;
+        z-index: 4;
+      }
+      #start-title {
+        font-family:
+          "Orbitron", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-weight: 700;
+        font-size: clamp(30px, 8.8vw, 60px);
+        letter-spacing: 0.12em;
+        line-height: 1.15;
+        margin: 0;
+        /* Cool white-to-blue gradient fill instead of a flat color -- gives
+           it a "signal" quality that fits the app's palette. text-shadow
+           still applies to the transparent-filled glyphs, so the dark halo
+           below keeps working exactly as before. */
+        background: linear-gradient(
+          180deg,
+          #ffffff 0%,
+          #bcd9f5 55%,
+          #6ea8dc 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        /* Slight glow + dark halo so the satellite passing behind stays
+           readable against the glyphs rather than muddying them. */
+        text-shadow:
+          0 0 4px rgba(6, 12, 24, 0.95),
+          0 0 12px rgba(6, 12, 24, 0.8),
+          0 0 34px rgba(110, 170, 235, 0.4);
+      }
+      #start-inner {
+        position: relative;
+        z-index: 4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        max-width: 540px;
+      }
+      #start-sub {
+        font-size: clamp(11px, 3vw, 13px);
+        letter-spacing: 0.08em;
+        color: #8891a8;
+        line-height: 1.75;
+        margin: 0;
+        text-shadow: 0 0 8px rgba(6, 12, 24, 0.9);
+      }
+      #start-count {
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        color: #5f7f9d;
+      }
+      #start-btn {
+        appearance: none;
+        cursor: pointer;
+        font: inherit;
+        font-size: 14px;
+        letter-spacing: 0.24em;
+        color: #dfe9f7;
+        padding: 14px 44px;
+        border-radius: 10px;
+        border: 1px solid #3d5f86;
+        background: linear-gradient(180deg, #1a2d47 0%, #12203a 100%);
+        transition:
+          transform 140ms ease,
+          box-shadow 240ms ease,
+          border-color 240ms ease;
+        animation: startpulse 3.4s ease-in-out infinite;
+      }
+      #start-btn:hover,
+      #start-btn:focus-visible {
+        border-color: #6ea8dc;
+        outline: none;
+        transform: translateY(-1px);
+      }
+      #start-btn:active {
+        transform: translateY(1px);
+      }
+      @keyframes startpulse {
+        0%,
+        100% {
+          box-shadow:
+            0 0 0 rgba(96, 156, 214, 0),
+            0 6px 22px rgba(0, 0, 0, 0.45);
+        }
+        50% {
+          box-shadow:
+            0 0 28px rgba(96, 156, 214, 0.26),
+            0 6px 22px rgba(0, 0, 0, 0.45);
+        }
+      }
+      #start-hint {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: #52678a;
+      }
+      #start-footer {
+        position: relative;
+        z-index: 4;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: #5c6f8e;
+      }
+      #start-footer a {
+        color: #9dc2e6;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(157, 194, 230, 0.35);
+        padding-bottom: 1px;
+        transition:
+          color 180ms ease,
+          border-color 180ms ease;
+      }
+      #start-footer a:hover,
+      #start-footer a:focus-visible {
+        color: #d6e8fa;
+        border-color: #d6e8fa;
+        outline: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .star-layer,
+        #start-sat,
+        #start-sat .sat-bob,
+        #start-btn {
+          animation: none;
+        }
+      }
+
+      /* ---- Audio toggle ---- */
+      #audio-btn {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        z-index: 12;
+        width: 38px;
+        height: 38px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 9px;
+        border: 1px solid #2b3852;
+        background: rgba(13, 20, 32, 0.86);
+        color: #8891a8;
+        font:
+          14px ui-monospace,
+          Menlo,
+          Consolas,
+          monospace;
+        padding: 0;
+        transition:
+          color 180ms ease,
+          border-color 180ms ease;
+      }
+      #audio-btn.shown {
+        display: flex;
+      }
+      #audio-btn:hover {
+        color: #d8dce6;
+        border-color: #3d5f86;
+      }
+
+      /* ---- satellite search / filter panel ---- */
+      /* Upper-left, inside the top half the layout design already reserves
+         for UI. display:none until the catalog finishes loading (same
+         pattern as #audio-btn appearing only once there's something to
+         control), shown via .shown. */
+      #search-panel {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        z-index: 11;
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        width: 190px;
+      }
+      #search-panel.shown {
+        display: flex;
+      }
+      #search-panel select {
+        width: 100%;
+        appearance: none;
+        cursor: pointer;
+        font:
+          12px ui-monospace,
+          "SF Mono",
+          Menlo,
+          Consolas,
+          monospace;
+        color: #cfd7e6;
+        background: rgba(13, 20, 32, 0.86);
+        border: 1px solid #2b3852;
+        border-radius: 8px;
+        padding: 7px 26px 7px 10px;
+        transition: border-color 180ms ease;
+        /* small caret drawn in CSS, no image asset */
+        background-image:
+          linear-gradient(45deg, transparent 50%, #7f96b8 50%),
+          linear-gradient(135deg, #7f96b8 50%, transparent 50%);
+        background-position:
+          calc(100% - 15px) center,
+          calc(100% - 10px) center;
+        background-size:
+          5px 5px,
+          5px 5px;
+        background-repeat: no-repeat;
+      }
+      #search-panel select:hover,
+      #search-panel select:focus-visible {
+        border-color: #3d5f86;
+        outline: none;
+      }
+      #search-panel select:focus-visible {
+        border-color: #6ea8dc;
+      }
+
+      #drag-hint {
+        position: fixed;
+        left: 50%;
+        /* Was bottom: 9% -- that's ~91% down the screen, but the earth
+           silhouette's peak sits at 84.5% (see the ground-projection design
+           note in <script>), so the hint was rendering directly on top of
+           bright terrain texture. Light gray text with just a shadow-halo
+           doesn't have much contrast margin to begin with, and a bright,
+           busy background eats what little there was.
+           Above the spotlight (56.25%) instead: that's inside the zone the
+           layout design explicitly reserves for UI, which by construction
+           never has terrain OR satellites drawn into it -- guaranteed dark
+           starfield behind the text at all times. */
+        top: 40%;
+        transform: translateX(-50%);
+        z-index: 8;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #cfe0f5;
+        opacity: 0;
+        pointer-events: none;
+        text-shadow: 0 0 10px rgba(6, 12, 24, 0.85);
+        transition: opacity 900ms ease;
+      }
+      #drag-hint.visible {
+        opacity: 0.6;
+        animation: drag-hint-pulse 3.4s ease-in-out infinite;
+      }
+      #drag-hint.gone {
+        opacity: 0 !important;
+        animation: none;
+      }
+      @keyframes drag-hint-pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 0.75;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #drag-hint.visible {
+          animation: none;
+          opacity: 0.55;
+        }
+      }
     </style>
   </head>
   <body>
     <div id="loading">LOADING ORBITAL DATA...</div>
     <div id="app-root"></div>
+    <div id="drag-hint" aria-hidden="true">drag to explore</div>
+
+    <!-- Start screen. Doubles as the audio unlock gate: browsers refuse to
+         start an AudioContext without a user gesture, so the START tap is
+         what lets the ambient bed begin. -->
+    <div id="start">
+      <div class="star-layer" id="stars-far"></div>
+      <div class="star-layer" id="stars-near"></div>
+
+      <!-- Roaming satellite: z-index 2, under the title at z-index 4, so it
+           passes behind the letterforms. -->
+      <div id="start-sat" aria-hidden="true">
+        <span class="sat-bob">
+          <svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg">
+            <g fill="none" stroke="#8fb6dd" stroke-width="1.4">
+              <line x1="14" y1="16" x2="24" y2="16" />
+              <line x1="40" y1="16" x2="50" y2="16" />
+            </g>
+            <rect
+              x="24"
+              y="10"
+              width="16"
+              height="12"
+              rx="1.5"
+              fill="#263d5c"
+              stroke="#7fa8d2"
+              stroke-width="1.4"
+            />
+            <rect
+              x="28"
+              y="13"
+              width="8"
+              height="6"
+              rx="1"
+              fill="#9fd0f0"
+              opacity=".85"
+            />
+            <rect
+              x="3"
+              y="8"
+              width="11"
+              height="16"
+              rx="1"
+              fill="#1d3350"
+              stroke="#6f97c2"
+              stroke-width="1.2"
+            />
+            <rect
+              x="50"
+              y="8"
+              width="11"
+              height="16"
+              rx="1"
+              fill="#1d3350"
+              stroke="#6f97c2"
+              stroke-width="1.2"
+            />
+            <g stroke="#4d78a6" stroke-width=".9">
+              <line x1="3" y1="13" x2="14" y2="13" />
+              <line x1="3" y1="18" x2="14" y2="18" />
+              <line x1="50" y1="13" x2="61" y2="13" />
+              <line x1="50" y1="18" x2="61" y2="18" />
+            </g>
+            <line
+              x1="32"
+              y1="22"
+              x2="32"
+              y2="28"
+              stroke="#7fa8d2"
+              stroke-width="1.2"
+            />
+            <circle cx="32" cy="29" r="1.6" fill="#9fd0f0" />
+          </svg>
+        </span>
+      </div>
+
+      <div id="start-top">
+        <h1 id="start-title">My_Satellite</h1>
+      </div>
+
+      <div id="start-inner">
+        <p id="start-sub">
+          Real public Earth-observation satellites, positioned live from orbital
+          data. Drag to roam the surface. Tap a satellite to read its file.
+        </p>
+        <div id="start-count">&nbsp;</div>
+        <button id="start-btn" type="button">BEGIN</button>
+        <div id="start-hint">
+          sound on &mdash; toggle any time, bottom right
+        </div>
+      </div>
+
+      <div id="start-footer">
+        Application by
+        <a
+          href="https://goheist01.github.io/jose-escobar-cv/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Jose Escobar</a
+        >
+      </div>
+    </div>
+
+    <button id="audio-btn" type="button" aria-label="Toggle sound">♪</button>
+
+    <div id="search-panel">
+      <select id="type-select" aria-label="Filter by data type">
+        <option value="">All types</option>
+      </select>
+      <select id="sat-select" aria-label="Search by name">
+        <option value="">Search satellite…</option>
+      </select>
+    </div>
 
     <div id="dex" aria-hidden="true">
       <div
@@ -296,6 +802,16 @@
 
     <script>
       (async () => {
+        // Preview/embed mode: ?preview=1 in the URL. Intended for embedding
+        // a passive, auto-drifting "teaser" chunk elsewhere (e.g. a portfolio
+        // page) via <iframe>, with a click-catching overlay link on the
+        // PARENT page opening the real interactive app in a new tab -- the
+        // iframe itself just needs to look alive, not be interactive.
+        // Skips the start screen (so no audio -- there's no user gesture to
+        // unlock it anyway inside an embed) and all UI chrome, disables
+        // pointer/wheel input, and drifts the camera on its own each frame.
+        const PREVIEW_MODE =
+          new URLSearchParams(location.search).get("preview") === "1";
         // =====================================================================
         // Little-planet free-roam surface.
         //
@@ -451,6 +967,44 @@
         function applySnapStep() {
           // Ease the target (tap-selected, else nearest) into dead-center:
           // the spotlight always holds exactly one satellite.
+          //
+          // EXCEPT inside the polar cap. The catalog is overwhelmingly
+          // sun-synchronous (incl ~98.2 deg), and such a ground track turns
+          // around at |lat| = 180 - incl ~= 81.8 deg -- no satellite ever gets
+          // nearer the pole than that. So above the cap there is nothing to
+          // center, and snap-to-nearest could only ever drag the view back DOWN
+          // to the 81.8 deg band. Measured: repeated drags toward the pole hit a
+          // hard fixed point at 81.84 deg and never advanced, while the snap slid
+          // the view around in longitude -- the view "rotating on the axis"
+          // instead of crossing to the other side. Dragging away from the pole
+          // felt fine because satellites exist at every lower latitude.
+          //
+          // A distance threshold would NOT fix this: standing on the pole, the
+          // nearest satellite is only ~8 deg away. It is close, there is just
+          // nothing above it. So the cap itself is the right test.
+          //
+          // An explicit tap target still always wins -- if you asked for a
+          // specific satellite, you get it, cap or no cap.
+          if (!(snapTarget && snapTarget.ok)) {
+            let maxAbsSinLat = 0;
+            for (const s of catalog) {
+              if (!s.ok) continue;
+              const a = Math.abs(s.v.z); // |sin(lat)|
+              if (a > maxAbsSinLat) maxAbsSinLat = a;
+            }
+            // Compare in ANGLES, not sines: near 82 deg the sine curve is so
+            // compressed that adding a margin to the sine value saturates at 1
+            // and the test never fires.
+            const maxSatLat = Math.asin(Math.min(1, maxAbsSinLat));
+            const capEntry = maxSatLat + 1.5 * (Math.PI / 180); // small anti-chatter margin
+            const viewLatAbs = Math.abs(
+              Math.asin(Math.max(-1, Math.min(1, baseF.z))),
+            );
+            if (viewLatAbs > capEntry) {
+              snapping = false;
+              return; // free roam through the cap; nothing here to center
+            }
+          }
           let targetV = null;
           if (snapTarget && snapTarget.ok) {
             targetV = snapTarget.v;
@@ -477,6 +1031,19 @@
           );
           if (angToTarget < 0.001) {
             snapping = false;
+            // Search-select wants "arrive and open the file" in one step;
+            // canvas-tap deliberately keeps its existing two-stage behaviour
+            // (first tap travels, tapping the settled spotlight opens dex) --
+            // see the tap handler's own comment for why that split exists.
+            // autoOpenDexOnArrival is the only thing distinguishing the two
+            // paths at this shared convergence point.
+            if (autoOpenDexOnArrival && snapTarget) {
+              const arrived = snapTarget;
+              autoOpenDexOnArrival = false;
+              snapTarget = null;
+              openDex(arrived);
+              return;
+            }
             snapTarget = null;
             return;
           }
@@ -519,7 +1086,8 @@
           W: 0xe8ecf2, // white / dish
         };
 
-        const OUTLINE_COLOR = 0xffffff;
+        // OUTLINE_COLOR removed along with the outline pass -- see
+        // buildSpriteTextures for the reasoning.
 
         const SPRITE_GRIDS = {
           optical: [
@@ -715,21 +1283,31 @@
               x >= 0 && y >= 0 && x < cols && y < rows && grid[y][x] !== ".";
 
             const g = new PIXI.Graphics();
-            // Outline pass: every empty cell (in a 1px-padded frame) touching the
-            // silhouette (8-neighborhood) becomes a white "container" pixel --
-            // crisp pixel-art separation when sprites overlap, baked into the
-            // texture so it costs nothing at render time.
+            // Thin solid-black outline, brought back by request -- but
+            // deliberately NOT the old version. That one used 8-neighborhood
+            // adjacency (diagonals included) in bright white at 0.9 alpha,
+            // which on a ~13px sprite was thick enough to eat real body
+            // detail. This one uses 4-neighborhood only (orthogonal
+            // neighbors, no diagonals -- visibly thinner at corners) in
+            // solid opaque black. Black rather than white matters here: it's
+            // nearly invisible against the dark starfield where nothing
+            // needs separating, and only reads as a seam exactly where two
+            // bright, adjacent, opaque shapes actually need one -- which is
+            // the specific "sprites overlap near the spotlight and look
+            // dirty" problem this is meant to solve, without the constant
+            // bright halo the white version had everywhere else.
             for (let y = -1; y <= rows; y++) {
               for (let x = -1; x <= cols; x++) {
                 if (filled(x, y)) continue;
-                let touches = false;
-                for (let dy = -1; dy <= 1 && !touches; dy++)
-                  for (let dx = -1; dx <= 1 && !touches; dx++)
-                    if ((dx || dy) && filled(x + dx, y + dy)) touches = true;
+                const touches =
+                  filled(x - 1, y) ||
+                  filled(x + 1, y) ||
+                  filled(x, y - 1) ||
+                  filled(x, y + 1);
                 if (touches)
                   g.rect(x + 1, y + 1, 1, 1).fill({
-                    color: OUTLINE_COLOR,
-                    alpha: 0.9,
+                    color: 0x000000,
+                    alpha: 1,
                   });
               }
             }
@@ -759,6 +1337,1118 @@
         });
         document.getElementById("app-root").appendChild(app.canvas);
         document.getElementById("loading").classList.add("hidden");
+
+        // ================= procedural audio =================
+        // Every sound here is SYNTHESISED at runtime by the Web Audio API.
+        // No audio files: nothing to download (mobile data budget), nothing to
+        // license, no build step -- the same reasoning that drove the pixel-art
+        // sprites being drawn in code rather than shipped as images.
+        //
+        // The bed is a slow, wide drone in a fixed pentatonic set, plus
+        // occasional sparse "pings" so it breathes instead of sitting still.
+        // Kept deliberately quiet and low-passed: this plays under a tool
+        // someone may leave open, so it must never demand attention.
+        const Audio = (() => {
+          let ctx = null,
+            master = null,
+            ambient = null, // whole roaming bed (wind/water floor + flute + chimes + whales)
+            wetSend = null, // shared reverb send
+            dexGain = null, // "inside the file" room tone
+            noiseSrc = null,
+            started = false,
+            muted = false,
+            inDex = false;
+          let whaleTimer = null,
+            fluteTimer = null,
+            malletTimer = null,
+            chimeTimer = null,
+            dexBubbleTimer = null;
+
+          const MASTER_LEVEL = 0.55;
+          const BED_LEVEL = 0.2;
+          const DEX_LEVEL = 0.14;
+
+          function ensure() {
+            if (ctx) return ctx;
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return null;
+            ctx = new AC();
+            master = ctx.createGain();
+            master.gain.value = 0.0001;
+            master.connect(ctx.destination);
+            return ctx;
+          }
+
+          function ramp(param, to, secs) {
+            const t = ctx.currentTime;
+            param.cancelScheduledValues(t);
+            param.setValueAtTime(Math.max(0.0001, param.value), t);
+            param.exponentialRampToValueAtTime(Math.max(0.0001, to), t + secs);
+          }
+
+          // Generated impulse response -- a noise burst with an exponential
+          // tail. This is what turns bare oscillators into something that
+          // sounds like a large, calm space rather than a synth patch. It is
+          // also what makes the whale calls read as underwater.
+          function makeReverb(seconds, decay) {
+            const rate = ctx.sampleRate;
+            const len = Math.floor(rate * seconds);
+            const buf = ctx.createBuffer(2, len, rate);
+            for (let ch = 0; ch < 2; ch++) {
+              const d = buf.getChannelData(ch);
+              for (let i = 0; i < len; i++) {
+                d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+              }
+            }
+            const conv = ctx.createConvolver();
+            conv.buffer = buf;
+            return conv;
+          }
+
+          // ---- ambient bed: reworked from a held chord to a soundscape ----
+          // The old version was three oscillators playing CONTINUOUSLY --
+          // filter and volume moved, but the notes themselves never changed
+          // or stopped, which is exactly what reads as a machine humming
+          // ("purring cat") rather than something alive. Reworked as
+          // separate layers instead of one pad:
+          //   - wind / water: continuous but genuinely faint, a floor, not
+          //     a foreground drone
+          //   - flute phrases: sparse breathy 2-3 note events, mostly
+          //     silence between them
+          //   - wind chimes: rare bright clusters
+          // Real quiet/space between events is what was actually missing,
+          // not a different chord.
+          function buildBed() {
+            ambient = ctx.createGain();
+            ambient.gain.value = 0.0001;
+            ambient.connect(master);
+
+            const reverb = makeReverb(6.5, 2.1); // long, open-air tail
+            const wetLevel = ctx.createGain();
+            wetLevel.gain.value = 0.9;
+            reverb.connect(wetLevel).connect(ambient);
+            wetSend = ctx.createGain();
+            wetSend.gain.value = 1;
+            wetSend.connect(reverb);
+
+            buildWind();
+            buildWater();
+            buildUndertone();
+          }
+
+          function buildWind() {
+            const src = ctx.createBufferSource();
+            src.buffer = getSharedNoise();
+            src.loop = true;
+            const bp = ctx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.frequency.value = 420;
+            bp.Q.value = 0.8;
+
+            // Two slow LFOs at a non-integer frequency ratio, summed onto the
+            // same cutoff. A single LFO gives the wind an audible, repeating
+            // cycle -- itself a kind of purring. Two rates that never line up
+            // never repeat on any timescale a listener would notice.
+            const lfoA = ctx.createOscillator(),
+              lfoAGain = ctx.createGain();
+            lfoA.frequency.value = 0.017;
+            lfoAGain.gain.value = 150;
+            const lfoB = ctx.createOscillator(),
+              lfoBGain = ctx.createGain();
+            lfoB.frequency.value = 0.0091;
+            lfoBGain.gain.value = 90;
+            lfoA.connect(lfoAGain).connect(bp.frequency);
+            lfoB.connect(lfoBGain).connect(bp.frequency);
+            lfoA.start();
+            lfoB.start();
+
+            const g = ctx.createGain();
+            g.gain.value = 0.045; // deliberately faint: a floor, not a foreground layer
+            src.connect(bp).connect(g);
+            g.connect(ambient);
+            g.connect(wetSend);
+            src.start();
+          }
+
+          function buildWater() {
+            const src = ctx.createBufferSource();
+            src.buffer = getSharedNoise();
+            src.loop = true;
+            const bp = ctx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.frequency.value = 1050;
+            bp.Q.value = 0.6;
+
+            const g = ctx.createGain();
+            // Base level plus two summed swells of non-integer-ratio period
+            // (same anti-repetition trick as the wind): reads as waves
+            // washing in and out irregularly rather than a metronome.
+            // Amplitudes are sized so the sum can never cross zero.
+            g.gain.value = 0.02;
+            const swA = ctx.createOscillator(),
+              swAGain = ctx.createGain();
+            swA.frequency.value = 0.045;
+            swAGain.gain.value = 0.008;
+            const swB = ctx.createOscillator(),
+              swBGain = ctx.createGain();
+            swB.frequency.value = 0.031;
+            swBGain.gain.value = 0.006;
+            swA.connect(swAGain).connect(g.gain);
+            swB.connect(swBGain).connect(g.gain);
+            swA.start();
+            swB.start();
+
+            src.connect(bp).connect(g);
+            g.connect(ambient);
+            g.connect(wetSend);
+            src.start();
+          }
+
+          // Brought back by request -- this is the exact three-oscillator
+          // chord from the original bed (root/fifth/octave, detuned sine +
+          // triangle, slow filter drift), just mixed roughly a sixth as loud
+          // as it used to be. It used to be the loudest single thing in the
+          // mix, essentially the whole bed; now it sits underneath the wind,
+          // water, flute, and chimes as a foundation instead of the lead
+          // voice -- recognizable if you listen for it, not the first thing
+          // you notice.
+          function buildUndertone() {
+            const filter = ctx.createBiquadFilter();
+            filter.type = "lowpass";
+            filter.frequency.value = 320;
+            filter.Q.value = 0.4;
+
+            const fLfo = ctx.createOscillator();
+            const fLfoGain = ctx.createGain();
+            fLfo.frequency.value = 0.021; // ~48s, barely perceptible
+            fLfoGain.gain.value = 110;
+            fLfo.connect(fLfoGain).connect(filter.frequency);
+            fLfo.start();
+
+            const bus = ctx.createGain();
+            bus.gain.value = 0.085; // faded: ~1/6 of the old 0.5 base level
+
+            // Small swell, same spirit as before but scaled down to match --
+            // amplitude sized so base minus swing never crosses zero.
+            const swell = ctx.createOscillator();
+            const swellGain = ctx.createGain();
+            swell.frequency.value = 0.055;
+            swellGain.gain.value = 0.028;
+            swell.connect(swellGain).connect(bus.gain);
+            swell.start();
+
+            [
+              { f: 55, t: "sine", d: -5, g: 0.55 },
+              { f: 82.41, t: "sine", d: +4, g: 0.3 },
+              { f: 110, t: "triangle", d: -2, g: 0.14 },
+            ].forEach(({ f, t, d, g }) => {
+              const o = ctx.createOscillator();
+              const og = ctx.createGain();
+              o.type = t;
+              o.frequency.value = f;
+              o.detune.value = d;
+              og.gain.value = g;
+              o.connect(og).connect(filter);
+              o.start();
+            });
+
+            filter.connect(bus);
+            bus.connect(ambient);
+            bus.connect(wetSend);
+          }
+
+          // Warm, low-mid pentatonic -- deliberately different register from
+          // the whale calls and the bright chimes, so all three stay
+          // distinguishable when they land close together.
+          const FLUTE_SCALE = [196.0, 220.0, 246.94, 293.66, 329.63];
+
+          function playFluteNote(freq, t0) {
+            const dur = 4.2 + Math.random() * 4.0;
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(0.05, t0 + 0.7); // slow, breathy entrance
+            g.gain.exponentialRampToValueAtTime(0.032, t0 + dur * 0.7);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            g.connect(wetSend);
+            g.connect(ambient);
+
+            // Breathy chiff at the attack -- a real flute's onset is air
+            // before it's pitch. Without this a sine tone alone reads as an
+            // organ, not breath.
+            const chiff = ctx.createBufferSource();
+            chiff.buffer = getSharedNoise();
+            const chiffBp = ctx.createBiquadFilter();
+            chiffBp.type = "bandpass";
+            chiffBp.frequency.value = freq * 2.2;
+            chiffBp.Q.value = 1.1;
+            const chiffGain = ctx.createGain();
+            chiffGain.gain.setValueAtTime(0.0001, t0);
+            chiffGain.gain.exponentialRampToValueAtTime(0.03, t0 + 0.06);
+            chiffGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.34);
+            chiff.connect(chiffBp).connect(chiffGain).connect(g);
+            chiff.start(t0);
+            chiff.stop(t0 + 0.4);
+
+            // Vibrato fades IN rather than being present from note-on -- a
+            // real player settles into vibrato after the note has sustained,
+            // not from the very first instant.
+            const vib = ctx.createOscillator();
+            const vibDepth = ctx.createGain();
+            vib.frequency.value = 4.4 + Math.random() * 1.4;
+            vibDepth.gain.setValueAtTime(0.0001, t0);
+            vibDepth.gain.linearRampToValueAtTime(0.0001, t0 + 1.1);
+            vibDepth.gain.linearRampToValueAtTime(3.0, t0 + 2.3);
+            vib.connect(vibDepth);
+            vib.start(t0);
+            vib.stop(t0 + dur + 0.2);
+
+            const o = ctx.createOscillator();
+            o.type = "sine";
+            o.frequency.setValueAtTime(freq, t0);
+            vibDepth.connect(o.frequency);
+            o.connect(g);
+
+            // Faint octave partial -- breath texture, not a second note.
+            const o2 = ctx.createOscillator();
+            o2.type = "triangle";
+            o2.frequency.setValueAtTime(freq * 2, t0);
+            const o2Gain = ctx.createGain();
+            o2Gain.gain.value = 0.1;
+            o2.connect(o2Gain).connect(g);
+
+            o.start(t0);
+            o.stop(t0 + dur + 0.2);
+            o2.start(t0);
+            o2.stop(t0 + dur + 0.2);
+          }
+
+          // "Double/triple drone flute notes": 2-3 notes, staggered onset
+          // (not perfectly synced, like layered breath entries) rather than
+          // a single melody line or a locked chord.
+          function flutePhrase() {
+            if (!ctx || muted || inDex) return;
+            const count = Math.random() < 0.6 ? 2 : 3;
+            const t0base = ctx.currentTime + 0.05;
+            for (let i = 0; i < count; i++) {
+              const freq =
+                FLUTE_SCALE[(Math.random() * FLUTE_SCALE.length) | 0];
+              const onset = t0base + i * (0.3 + Math.random() * 0.55);
+              playFluteNote(freq, onset);
+            }
+          }
+
+          function scheduleFlute() {
+            // Long, irregular gaps -- this is where the actual "silence"
+            // requested lives: most of the time nothing plays but the faint
+            // wind/water floor.
+            const wait = 18000 + Math.random() * 26000;
+            fluteTimer = setTimeout(() => {
+              if (
+                started &&
+                !muted &&
+                !inDex &&
+                document.visibilityState === "visible"
+              )
+                flutePhrase();
+              scheduleFlute();
+            }, wait);
+          }
+
+          // Mallet/xylophone sparkle -- the "discovery" accent. Sits an
+          // octave-plus above the flute and well below the chimes, so all
+          // three read as distinct instruments rather than blurring
+          // together. Short wooden plucks in a brief ascending or
+          // descending run, like a small moment of finding something.
+          const MALLET_SCALE = [523.25, 587.33, 659.25, 783.99, 880.0, 987.77];
+
+          function malletNote(freq, t0) {
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(0.05, t0 + 0.006); // fast mallet attack
+            g.gain.exponentialRampToValueAtTime(
+              0.0001,
+              t0 + 0.55 + Math.random() * 0.35,
+            );
+            g.connect(wetSend);
+            g.connect(ambient);
+            // Fundamental + a quiet higher partial -- reads as struck wood
+            // rather than a pure electronic ping.
+            [
+              { mult: 1, gain: 1, type: "sine" },
+              { mult: 3.01, gain: 0.13, type: "sine" },
+            ].forEach(({ mult, gain, type }) => {
+              const o = ctx.createOscillator();
+              o.type = type;
+              o.frequency.value = freq * mult;
+              const og = ctx.createGain();
+              og.gain.value = gain;
+              o.connect(og).connect(g);
+              o.start(t0);
+              o.stop(t0 + 1.1);
+            });
+          }
+
+          function malletRun() {
+            if (!ctx || muted || inDex) return;
+            const count = 3 + (Math.random() < 0.5 ? 0 : 1); // 3-4 notes
+            const dir = Math.random() < 0.6 ? 1 : -1;
+            let idx = (Math.random() * MALLET_SCALE.length) | 0;
+            let t = ctx.currentTime + 0.05;
+            for (let i = 0; i < count; i++) {
+              const n = MALLET_SCALE.length;
+              idx = (((idx + dir) % n) + n) % n;
+              malletNote(MALLET_SCALE[idx], t);
+              t += 0.16 + Math.random() * 0.14;
+            }
+          }
+
+          function scheduleMallet() {
+            const wait = 24000 + Math.random() * 30000;
+            malletTimer = setTimeout(() => {
+              if (
+                started &&
+                !muted &&
+                !inDex &&
+                document.visibilityState === "visible"
+              )
+                malletRun();
+              scheduleMallet();
+            }, wait);
+          }
+
+          // Bright register, well clear of the flute's and whale's ranges.
+          const CHIME_SCALE = [
+            880.0, 987.77, 1046.5, 1174.66, 1318.51, 1567.98,
+          ];
+
+          function windChimeNote(freq, t0) {
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(0.045, t0 + 0.008); // near-instant strike
+            g.gain.exponentialRampToValueAtTime(
+              0.0001,
+              t0 + 2.2 + Math.random() * 1.3,
+            ); // long decay, mostly carried by the reverb tail
+            g.connect(wetSend);
+            g.connect(ambient);
+            // Inharmonic partials -- what makes it read as struck metal
+            // rather than a musical note, same principle as the dex-entry
+            // metallic() sound but soft (sine, slow decay) instead of harsh.
+            [1, 2.41, 3.86, 5.4].forEach((ratio, i) => {
+              const o = ctx.createOscillator();
+              o.type = "sine";
+              o.frequency.value = freq * ratio;
+              const og = ctx.createGain();
+              og.gain.value = 1 / (i * 1.7 + 1.4);
+              o.connect(og).connect(g);
+              o.start(t0);
+              o.stop(t0 + 4);
+            });
+          }
+
+          function windChimeCluster() {
+            if (!ctx || muted || inDex) return;
+            const count = 2 + Math.floor(Math.random() * 3);
+            let t = ctx.currentTime + 0.05;
+            for (let i = 0; i < count; i++) {
+              const freq =
+                CHIME_SCALE[(Math.random() * CHIME_SCALE.length) | 0];
+              windChimeNote(freq, t);
+              t += 0.09 + Math.random() * 0.28; // a gust stirring several chimes, not a chord
+            }
+          }
+
+          function scheduleChimes() {
+            // Rarer than the flute -- chimes should feel like a genuine
+            // event, not a regular tick.
+            const wait = 42000 + Math.random() * 58000;
+            chimeTimer = setTimeout(() => {
+              if (
+                started &&
+                !muted &&
+                !inDex &&
+                document.visibilityState === "visible" &&
+                Math.random() < 0.85
+              )
+                windChimeCluster();
+              scheduleChimes();
+            }, wait);
+          }
+
+          // Whale song is essentially a long gliding tone with vibrato and a
+          // couple of harmonics -- rising, then settling. Randomised each call
+          // so it never sounds like the same sample looping.
+          // Shared brown-ish noise buffer, built once and reused everywhere a
+          // layer needs noise (wind, water, whale breath, flute chiff, dex
+          // tone, dex bubbles) -- regenerating per-use is wasteful and the
+          // reuse doesn't hurt realism since each use case shapes it
+          // differently (filtered, gated, enveloped).
+          let sharedNoiseBuf = null;
+          function getSharedNoise() {
+            if (sharedNoiseBuf) return sharedNoiseBuf;
+            const len = ctx.sampleRate * 2;
+            sharedNoiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+            const d = sharedNoiseBuf.getChannelData(0);
+            let last = 0;
+            for (let i = 0; i < len; i++) {
+              // brown-ish noise (integrated white noise): coarser, less
+              // hissy than raw white noise -- reads as breath/air, not static.
+              const w = Math.random() * 2 - 1;
+              last = (last + 0.02 * w) / 1.02;
+              d[i] = last * 3.5;
+            }
+            return sharedNoiseBuf;
+          }
+
+          // A real call isn't one clean glide -- it wanders through several
+          // uneven phrases, has breathy texture under the tone, and the
+          // vibrato itself isn't perfectly steady. This tries to approximate
+          // that with what Web Audio can synthesise (no sample playback).
+          function whaleCall(loud, pan) {
+            if (!ctx || muted || inDex) return;
+            pan = pan || 0;
+            const t0 = ctx.currentTime + 0.05;
+            const dur = 4.2 + Math.random() * 3.6;
+            const base = 95 + Math.random() * 70;
+
+            // Multi-phrase pitch contour: 3-4 uneven segments instead of one
+            // clean up/down arc. Each phrase target is a random multiple of
+            // the base, so the shape differs every call.
+            const phraseCount = 3 + (Math.random() < 0.5 ? 0 : 1);
+            let acc = 0;
+            const marks = [0];
+            for (let i = 0; i < phraseCount; i++) {
+              acc += 0.5 + Math.random();
+              marks.push(acc);
+            }
+            const freqs = [base];
+            for (let i = 0; i < phraseCount; i++) {
+              const dir = Math.random() < 0.65 ? 1 : -1; // mostly rising phrases, occasional dip
+              freqs.push(base * (1 + dir * (0.25 + Math.random() * 0.9)));
+            }
+            freqs.push(base * (0.65 + Math.random() * 0.2)); // settle low at the tail
+
+            const level = (loud ? 0.1 : 0.05) * (0.8 + Math.random() * 0.4);
+
+            const panner = ctx.createStereoPanner();
+            panner.pan.value = Math.max(-1, Math.min(1, pan));
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(level, t0 + dur * 0.22);
+            g.gain.exponentialRampToValueAtTime(level * 0.6, t0 + dur * 0.6);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            g.connect(panner);
+            panner.connect(wetSend);
+            panner.connect(ambient);
+
+            // Underwater/distant character: the call itself is rolled off,
+            // separate from the reverb.
+            const lp = ctx.createBiquadFilter();
+            lp.type = "lowpass";
+            lp.frequency.value = 850 + Math.random() * 300;
+            lp.Q.value = 0.3;
+            lp.connect(g);
+
+            // Vibrato depth is itself modulated slowly, so it swells and
+            // relaxes rather than sitting at one constant width -- real
+            // vibrato is not metronomic.
+            const vib = ctx.createOscillator();
+            const vibGain = ctx.createGain();
+            vib.frequency.value = 3.6 + Math.random() * 2.2;
+            vibGain.gain.value = 3;
+            const vibDepthLfo = ctx.createOscillator();
+            const vibDepthLfoGain = ctx.createGain();
+            vibDepthLfo.frequency.value = 0.3 + Math.random() * 0.4;
+            vibDepthLfoGain.gain.value = 2.6;
+            vibDepthLfo.connect(vibDepthLfoGain).connect(vibGain.gain);
+            vib.connect(vibGain);
+            vib.start(t0);
+            vibDepthLfo.start(t0);
+            vib.stop(t0 + dur + 0.1);
+            vibDepthLfo.stop(t0 + dur + 0.1);
+
+            [
+              { mult: 1, gain: 1, type: "sine" },
+              { mult: 1.995, gain: 0.22, type: "sine" }, // very slightly detuned "octave" -- inharmonic grain instead of a clean overtone
+              { mult: 2.97, gain: 0.09, type: "triangle" },
+            ].forEach(({ mult, gain, type }) => {
+              const o = ctx.createOscillator();
+              const og = ctx.createGain();
+              o.type = type;
+              og.gain.value = gain;
+              o.frequency.setValueAtTime(freqs[0] * mult, t0);
+              for (let i = 1; i < freqs.length; i++) {
+                const tAt = t0 + dur * (marks[i - 1] / acc);
+                o.frequency.exponentialRampToValueAtTime(
+                  Math.max(20, freqs[i] * mult),
+                  tAt,
+                );
+              }
+              vibGain.connect(o.frequency);
+              o.connect(og).connect(lp);
+              o.start(t0);
+              o.stop(t0 + dur + 0.1);
+            });
+
+            // Breath layer: bandpassed brown noise, gated to the same
+            // envelope, mixed in quietly under the tone.
+            const noise = ctx.createBufferSource();
+            noise.buffer = getSharedNoise();
+            noise.loop = true;
+            noise.loopStart = Math.random() * 1.5;
+            const bp = ctx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.frequency.value = base * 1.4;
+            bp.Q.value = 1.1;
+            const breathGain = ctx.createGain();
+            breathGain.gain.setValueAtTime(0.0001, t0);
+            breathGain.gain.exponentialRampToValueAtTime(
+              level * 0.5,
+              t0 + dur * 0.25,
+            );
+            breathGain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            noise.connect(bp).connect(breathGain).connect(lp);
+            noise.start(t0);
+            noise.stop(t0 + dur + 0.1);
+          }
+
+          function scheduleWhale() {
+            const wait = 14000 + Math.random() * 26000;
+            whaleTimer = setTimeout(() => {
+              if (
+                started &&
+                !muted &&
+                !inDex &&
+                document.visibilityState === "visible"
+              ) {
+                whaleCall(false, (Math.random() * 2 - 1) * 0.5);
+                // Whales often answer each other -- a second, fainter call.
+                if (Math.random() < 0.45)
+                  setTimeout(
+                    () => whaleCall(false, (Math.random() * 2 - 1) * 0.5),
+                    2600 + Math.random() * 2600,
+                  );
+              }
+              scheduleWhale();
+            }, wait);
+          }
+
+          // ---- dex room tone: dry, close, oxygen-mask white noise ----
+          function startDexTone() {
+            if (!ctx) return;
+            // Previous version used raw white noise at a wide bandpass (Q
+            // 0.55) -- equal energy across the spectrum, which is exactly
+            // what reads as "TV static" rather than air. Reworked: brown-ish
+            // noise (already smoother), a narrower/more resonant band (more
+            // tube-like, less broadband hiss), and critically the filter
+            // cutoff now sweeps WITH the breath cycle instead of only
+            // volume moving -- a fixed filter with just volume changing is
+            // what made it sound like hiss turning up and down rather than
+            // actual inhale/exhale.
+            noiseSrc = ctx.createBufferSource();
+            noiseSrc.buffer = getSharedNoise();
+            noiseSrc.loop = true;
+
+            const bp = ctx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.frequency.value = 380;
+            bp.Q.value = 2.4; // higher Q = tube-like resonance, not broadband
+            const lp = ctx.createBiquadFilter();
+            lp.type = "lowpass";
+            lp.frequency.value = 1400; // lower ceiling: removes the bright hiss top-end
+            lp.Q.value = 0.3;
+
+            dexGain = ctx.createGain();
+            dexGain.gain.value = 0.0001;
+
+            const breath = ctx.createOscillator();
+            const breathAmpGain = ctx.createGain();
+            const breathFiltGain = ctx.createGain();
+            breath.frequency.value = 0.16; // ~6.2s per cycle, relaxed pace
+            breathAmpGain.gain.value = 0.026;
+            breathFiltGain.gain.value = 110; // sweeps the band +/-110Hz with the breath
+            breath.connect(breathAmpGain).connect(dexGain.gain);
+            breath.connect(breathFiltGain).connect(bp.frequency);
+            breath.start();
+
+            noiseSrc.connect(bp).connect(lp).connect(dexGain);
+            dexGain.connect(master); // DRY -- deliberately not through reverb
+            noiseSrc.start();
+            ramp(dexGain.gain, DEX_LEVEL, 1.2);
+
+            scheduleDexBubble();
+          }
+
+          // Soft rising-then-falling filtered noise blip -- an oxygen bubble
+          // rather than a click. The falling sweep is what sells it: a
+          // static pitch reads as a pop, a falling one reads as something
+          // rising away through liquid.
+          function dexBubble() {
+            if (!ctx || muted || !inDex) return;
+            const t0 = ctx.currentTime + 0.02;
+            const dur = 0.14 + Math.random() * 0.12;
+            const startF = 950 + Math.random() * 500;
+
+            const src = ctx.createBufferSource();
+            src.buffer = getSharedNoise();
+            const bp = ctx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.Q.value = 4;
+            bp.frequency.setValueAtTime(startF, t0);
+            bp.frequency.exponentialRampToValueAtTime(startF * 0.32, t0 + dur);
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(0.045, t0 + dur * 0.3);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            src.connect(bp).connect(g).connect(master); // dry, matches the room tone
+            src.start(t0);
+            src.stop(t0 + dur + 0.05);
+          }
+
+          function scheduleDexBubble() {
+            const wait = 2400 + Math.random() * 3600;
+            dexBubbleTimer = setTimeout(() => {
+              if (inDex) {
+                dexBubble();
+                scheduleDexBubble();
+              }
+            }, wait);
+          }
+
+          function stopDexTone() {
+            if (dexBubbleTimer) {
+              clearTimeout(dexBubbleTimer);
+              dexBubbleTimer = null;
+            }
+            if (!dexGain || !noiseSrc) return;
+            const g = dexGain,
+              s = noiseSrc;
+            dexGain = null;
+            noiseSrc = null;
+            ramp(g.gain, 0.0001, 0.5);
+            setTimeout(() => {
+              try {
+                s.stop();
+              } catch (e) {
+                /* already stopped */
+              }
+            }, 700);
+          }
+
+          function tone(freq, dur, peak, type, glideTo, wet) {
+            if (!ctx || muted) return;
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = type || "sine";
+            o.frequency.setValueAtTime(freq, ctx.currentTime);
+            if (glideTo)
+              o.frequency.exponentialRampToValueAtTime(
+                glideTo,
+                ctx.currentTime + dur * 0.9,
+              );
+            g.gain.setValueAtTime(0.0001, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(peak, ctx.currentTime + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+            o.connect(g);
+            g.connect(master);
+            if (wet && wetSend) g.connect(wetSend);
+            o.start();
+            o.stop(ctx.currentTime + dur + 0.05);
+          }
+
+          // Metallic = INHARMONIC partials (not integer multiples) with a very
+          // fast decay. That ratio set is what makes it read as struck metal
+          // rather than a musical note.
+          function metallic() {
+            if (!ctx || muted) return;
+            const t0 = ctx.currentTime;
+            const hp = ctx.createBiquadFilter();
+            hp.type = "highpass";
+            hp.frequency.value = 900;
+            const out = ctx.createGain();
+            out.gain.value = 0.85;
+            hp.connect(out).connect(master);
+            [1, 2.76, 5.4, 8.93].forEach((r, i) => {
+              const o = ctx.createOscillator();
+              const g = ctx.createGain();
+              o.type = "square";
+              o.frequency.value = 620 * r;
+              const peak = 0.05 / (i + 1.4);
+              const dur = 0.16 - i * 0.022;
+              g.gain.setValueAtTime(0.0001, t0);
+              g.gain.exponentialRampToValueAtTime(peak, t0 + 0.004);
+              g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+              o.connect(g).connect(hp);
+              o.start(t0);
+              o.stop(t0 + dur + 0.03);
+            });
+          }
+
+          return {
+            start() {
+              if (started) return;
+              if (!ensure()) return;
+              if (ctx.state === "suspended") ctx.resume();
+              buildBed();
+              started = true;
+              ramp(master.gain, MASTER_LEVEL, 1.4);
+              // Was 8.0s: an exponential ramp from near-silent is dominated
+              // by its first couple seconds, so at t=4s it was still only
+              // ~2% of target volume -- effectively inaudible until ~6s in,
+              // by which point most people have already started dragging.
+              // That's what read as "audio starts on first drag" -- the
+              // trigger fired correctly on START, the fade was just too slow
+              // to notice. Still a gentle entrance, just a perceptible one.
+              ramp(ambient.gain, BED_LEVEL, 2.4);
+              scheduleWhale();
+              scheduleFlute();
+              scheduleMallet();
+              scheduleChimes();
+              setTimeout(() => whaleCall(false), 6000); // one early call
+              setTimeout(() => flutePhrase(), 9000); // and one early flute phrase
+              setTimeout(() => malletRun(), 14000); // and one early sparkle
+            },
+
+            // Satellite tapped: metallic strike, then the roaming bed drops
+            // out entirely and the close, dry room tone takes over.
+            enterDex() {
+              if (!ctx || inDex) return;
+              inDex = true;
+              metallic();
+              if (ambient) ramp(ambient.gain, 0.0001, 0.45);
+              setTimeout(() => {
+                if (inDex) startDexTone();
+              }, 260);
+            },
+            exitDex() {
+              if (!ctx || !inDex) return;
+              inDex = false;
+              stopDexTone();
+              if (ambient) ramp(ambient.gain, BED_LEVEL, 2.2); // bed swells back
+            },
+
+            select() {
+              tone(392, 0.26, 0.05, "sine", 523.25, true);
+            },
+            whale(loud, pan) {
+              whaleCall(loud, pan);
+            },
+            begin() {
+              tone(146.83, 1.6, 0.07, "sine", 220, true);
+            },
+            setMuted(m) {
+              muted = m;
+              if (!ctx) return;
+              ramp(master.gain, m ? 0.0001 : MASTER_LEVEL, 0.5);
+            },
+            isMuted: () => muted,
+            suspendForHidden(hidden) {
+              if (!ctx || !started || muted) return;
+              ramp(master.gain, hidden ? 0.0001 : MASTER_LEVEL, 0.6);
+            },
+          };
+        })();
+
+        document.addEventListener("visibilitychange", () => {
+          Audio.suspendForHidden(document.visibilityState !== "visible");
+        });
+
+        const audioBtn = document.getElementById("audio-btn");
+        audioBtn.addEventListener("click", () => {
+          const nowMuted = !Audio.isMuted();
+          Audio.setMuted(nowMuted);
+          audioBtn.textContent = nowMuted ? "✕" : "♪";
+          audioBtn.setAttribute(
+            "aria-label",
+            nowMuted ? "Turn sound on" : "Turn sound off",
+          );
+        });
+
+        // ---------------- satellite search / filter panel ----------------
+        // Set to true ONLY by search-select below; applySnapStep reads it at
+        // the convergence point to decide whether this particular arrival
+        // should auto-open the dex. Canvas-tap keeps its existing two-stage
+        // behaviour untouched -- three separate places that can interrupt a
+        // pending snap (main drag, nadir drag, a subsequent canvas tap) all
+        // explicitly clear this flag, so a stale true from an abandoned
+        // search can never leak into an unrelated later arrival.
+        let autoOpenDexOnArrival = false;
+
+        const typeSelect = document.getElementById("type-select");
+        const satSelect = document.getElementById("sat-select");
+        const searchPanel = document.getElementById("search-panel");
+
+        const satLabel = (s) => s.name || `NORAD ${s.norad_id}`;
+
+        function populateSatOptions(filterType) {
+          // Rebuilt from scratch each time rather than hidden/shown, so a
+          // screen reader or a mobile native picker only ever sees the
+          // currently-valid list, not a stale one with disabled entries.
+          const current = satSelect.value;
+          satSelect.innerHTML = '<option value="">Search satellite…</option>';
+          const matches = catalog
+            .filter(
+              (s) => !filterType || (s.meta && s.meta.data_type) === filterType,
+            )
+            .sort((a, b) => satLabel(a).localeCompare(satLabel(b)));
+          for (const s of matches) {
+            const opt = document.createElement("option");
+            opt.value = s.norad_id;
+            opt.textContent = satLabel(s);
+            satSelect.appendChild(opt);
+          }
+          // Keep the previous pick selected across a type-filter change, if
+          // it's still in the filtered list; otherwise fall back to the
+          // placeholder rather than silently landing on an unrelated option.
+          if (matches.some((s) => String(s.norad_id) === current))
+            satSelect.value = current;
+        }
+
+        function populateTypeOptions() {
+          const types = [
+            ...new Set(
+              catalog.map((s) => s.meta && s.meta.data_type).filter(Boolean),
+            ),
+          ].sort();
+          for (const t of types) {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = t;
+            typeSelect.appendChild(opt);
+          }
+        }
+
+        populateTypeOptions();
+        populateSatOptions("");
+        searchPanel.classList.add("shown");
+
+        typeSelect.addEventListener("change", () => {
+          populateSatOptions(typeSelect.value);
+        });
+
+        satSelect.addEventListener("change", () => {
+          const norad = satSelect.value;
+          if (!norad) return; // the placeholder itself was (re)selected
+          const target = catalog.find(
+            (s) => String(s.norad_id) === norad && s.ok,
+          );
+          if (!target) return; // propagation happens to be down for this one right now
+          snapTarget = target;
+          snapping = true;
+          autoOpenDexOnArrival = true; // arrive AND open the file -- see comment above
+          Audio.select();
+          satSelect.blur(); // let a mobile picker/keyboard close cleanly
+        });
+
+        // ---------------- start screen ----------------
+        const startEl = document.getElementById("start");
+        document.getElementById("start-count").textContent =
+          `${catalog.length} SATELLITES TRACKED`;
+
+        let hasBegun = false;
+        let dragHintShowTimer = null,
+          dragHintDismissed = false;
+        function hideDragHint() {
+          if (dragHintDismissed) return;
+          dragHintDismissed = true;
+          clearTimeout(dragHintShowTimer);
+          const el = document.getElementById("drag-hint");
+          if (el) {
+            el.classList.remove("visible");
+            el.classList.add("gone");
+          }
+        }
+        function beginExperience() {
+          if (hasBegun) return;
+          hasBegun = true;
+          Audio.start();
+          Audio.begin();
+          startEl.classList.add("gone");
+          audioBtn.classList.add("shown");
+          window.dispatchEvent(new Event("app:begin"));
+          setTimeout(() => app.canvas.focus(), 640);
+          // Small delay so it doesn't compete visually with the start-screen
+          // fade-out. Only "until app reset" (a reload) -- no persistence,
+          // matching how the rest of the session state works.
+          dragHintShowTimer = setTimeout(() => {
+            if (!dragHintDismissed)
+              document.getElementById("drag-hint").classList.add("visible");
+          }, 1000);
+        }
+        document
+          .getElementById("start-btn")
+          .addEventListener("click", beginExperience);
+        // A bare div never receives keydown, so listen at the window and only
+        // act while the start screen is still up.
+        window.addEventListener("keydown", (e) => {
+          if (hasBegun) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            beginExperience();
+          }
+        });
+        document.getElementById("start-btn").focus();
+
+        if (PREVIEW_MODE) {
+          // Skip the whole start ritual: no audio (there's no user gesture
+          // inside an embed to unlock it anyway), no drag hint (nothing to
+          // drag), straight into the scene.
+          hasBegun = true;
+          startEl.style.display = "none"; // fully out of layout and hit-testing
+          window.dispatchEvent(new Event("app:begin")); // stops the chase-satellite toy
+          // Canvas becomes transparent to ALL pointer events (this also
+          // blocks wheel, since wheel-target resolution uses the same
+          // hit-test as pointer events) -- a single line disables drag,
+          // tap-select, wheel-roam, and nadir-drag at once, since all of them
+          // are attached to or bubble through this element.
+          app.canvas.style.pointerEvents = "none";
+        }
+
+        // ---------------- chase-satellite mini-toy ----------------
+        // Pure DOM/JS, entirely separate from the Pixi app -- it only runs
+        // before BEGIN and stops the instant it's pressed, so it costs
+        // nothing once the real app is up.
+        (function () {
+          if (PREVIEW_MODE) return; // never starts, so there's no rAF loop to race the app:begin dispatch against
+          const satEl = document.getElementById("start-sat");
+          const reduced = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches;
+
+          let W = window.innerWidth,
+            H = window.innerHeight;
+          window.addEventListener("resize", () => {
+            W = window.innerWidth;
+            H = window.innerHeight;
+          });
+
+          let x = W * 0.15,
+            y = H * 0.28,
+            vx = 34,
+            vy = 6, // px/s baseline cruise
+            rot = -8,
+            mouseX = -9999,
+            mouseY = -9999,
+            wanderAngle = Math.random() * Math.PI * 2,
+            rafId = null,
+            lastT = null;
+
+          const CRUISE_SPEED = 34; // px/s, gentle baseline drift
+          const REPEL_RADIUS = 150; // px -- cursor proximity that triggers fleeing
+          const REPEL_STRENGTH = 2600;
+          const CATCH_RADIUS = 190; // px -- a click/tap this close counts as "tried to grab it"
+          const CATCH_BURST = 900; // sudden dash speed on a near-click
+          const MAX_SPEED = 640;
+          const EDGE_PAD = 60;
+
+          if (reduced) {
+            // Respect the OS setting: park it, no chase, no bob-driven motion.
+            satEl.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+            return;
+          }
+
+          startEl.addEventListener("pointermove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+          });
+          startEl.addEventListener("pointerleave", () => {
+            mouseX = -9999;
+            mouseY = -9999;
+          });
+          // A tap/click near the satellite reads as "tried to catch it" and
+          // gets a much bigger dash than the ambient avoidance does. This
+          // fires even though the element itself is pointer-events:none, so
+          // clicks still reach the BEGIN button underneath -- we're just
+          // watching where the click landed.
+          startEl.addEventListener("pointerdown", (e) => {
+            const dx = x - e.clientX,
+              dy = y - e.clientY;
+            const dist = Math.hypot(dx, dy) || 1;
+            if (dist < CATCH_RADIUS) {
+              const nx = dx / dist,
+                ny = dy / dist;
+              const jitter = (Math.random() - 0.5) * 0.6; // don't dash perfectly straight
+              vx = (nx + jitter) * CATCH_BURST;
+              vy = (ny - jitter) * CATCH_BURST;
+            }
+          });
+
+          function step(t) {
+            if (lastT === null) lastT = t;
+            const dt = Math.min(0.05, (t - lastT) / 1000); // clamp so a tab-switch stall can't launch it
+            lastT = t;
+
+            // Ambient wander: heading drifts slowly and randomly so the
+            // baseline path isn't a straight line.
+            wanderAngle += (Math.random() - 0.5) * 0.9 * dt;
+            const wx = Math.cos(wanderAngle) * CRUISE_SPEED;
+            const wy = Math.sin(wanderAngle) * CRUISE_SPEED * 0.6;
+
+            // Cursor repulsion: quadratic falloff, so it's gentle until the
+            // cursor is genuinely close, then sharp.
+            const dx = x - mouseX,
+              dy = y - mouseY;
+            const dist = Math.hypot(dx, dy);
+            let rx = 0,
+              ry = 0;
+            if (dist < REPEL_RADIUS) {
+              const f = REPEL_STRENGTH * Math.pow(1 - dist / REPEL_RADIUS, 2);
+              const nx = dist > 1 ? dx / dist : Math.random() - 0.5;
+              const ny = dist > 1 ? dy / dist : Math.random() - 0.5;
+              rx = nx * f;
+              ry = ny * f;
+            }
+
+            // Soft edge containment: repel from the walls the same way as the
+            // cursor, so it keeps roaming the whole screen instead of
+            // clipping or getting stuck in a corner.
+            let ex = 0,
+              ey = 0;
+            if (x < EDGE_PAD) ex += (EDGE_PAD - x) * 40;
+            if (x > W - EDGE_PAD) ex -= (x - (W - EDGE_PAD)) * 40;
+            if (y < EDGE_PAD) ey += (EDGE_PAD - y) * 40;
+            if (y > H - EDGE_PAD) ey -= (y - (H - EDGE_PAD)) * 40;
+
+            vx += (wx - vx) * 0.6 * dt + (rx + ex) * dt;
+            vy += (wy - vy) * 0.6 * dt + (ry + ey) * dt;
+
+            // Friction, applied AFTER the forces so a dash decays back to
+            // cruising speed instead of stopping dead.
+            const damp = Math.pow(0.06, dt); // ~0.06 per second
+            vx *= damp;
+            vy *= damp;
+
+            const speed = Math.hypot(vx, vy);
+            if (speed > MAX_SPEED) {
+              vx = (vx / speed) * MAX_SPEED;
+              vy = (vy / speed) * MAX_SPEED;
+            }
+
+            x += vx * dt;
+            y += vy * dt;
+            x = Math.max(-40, Math.min(W + 40, x));
+            y = Math.max(10, Math.min(H * 0.55, y)); // stays in the upper half, near the title
+
+            // Bank into the direction of travel; smoothed so it doesn't
+            // flicker frame to frame.
+            const targetRot = Math.max(
+              -34,
+              Math.min(34, (Math.atan2(vy, vx * 0.4) * 180) / Math.PI),
+            );
+            rot += (targetRot - rot) * Math.min(1, 6 * dt);
+
+            satEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${rot.toFixed(1)}deg)`;
+
+            rafId = requestAnimationFrame(step);
+          }
+          rafId = requestAnimationFrame(step);
+
+          // Stop entirely once the real app starts -- no reason to keep a
+          // physics loop running behind the scenes.
+          window.addEventListener("app:begin", () => {
+            if (rafId) cancelAnimationFrame(rafId);
+          });
+        })();
 
         const spriteTextures = buildSpriteTextures(app.renderer);
 
@@ -942,7 +2632,14 @@
 
           const behindHorizon = phi > VIS;
           const offscreen = x < -60 || x > W + 60 || y > H + 60;
-          const alpha = phi >= 0 ? Math.max(1 - 0.55 * tUp, 0.3) : 1;
+          // Alpha fade removed by request -- this was the actual cause of
+          // sprites reading as "blurry ghosts" against bright backdrops
+          // (confirmed by comparing against renderDexSprite, which draws the
+          // same PALETTE colors at flat full opacity and looks "clean").
+          // Depth is still communicated by scale (satellites already shrink
+          // as tUp -> 1 above), which doesn't have this side effect --
+          // solid color at every distance, size does the depth work alone.
+          const alpha = 1;
           return { x, y, scale, alpha, visible: !behindHorizon && !offscreen };
         }
 
@@ -1002,7 +2699,214 @@
         moonRoot.addChild(moonDisc, craterStrip, moonMask);
         craterStrip.mask = moonMask;
 
-        celestialLayer.addChild(sunRoot, moonRoot);
+        // ---------------- whale easter egg ----------------
+        // Procedurally rasterised rather than hand-plotted: each cell of a
+        // pixel grid is tested against a few primitives (body ellipse, fluke
+        // triangle, pectoral fin), which keeps the silhouette clean at any
+        // grid size and matches how the satellite sprites are built.
+        function buildWhaleTexture(renderer) {
+          // Higher-resolution grid than before (72x32 vs the old 44x20) for
+          // more anatomical detail: blue whales specifically have a broad,
+          // FLAT rostrum (not a tapered point), a small dorsal fin set well
+          // back toward the tail, long slender pectoral fins, and a forked
+          // fluke with a shallow center notch. Shape verified as ASCII art
+          // before porting here.
+          //
+          // Worth knowing: the on-screen display SIZE is unchanged from the
+          // "make it smaller" pass -- the scale-set call below divides by
+          // gridH, so a higher-res texture renders crisper at the same
+          // physical size rather than appearing bigger.
+          const GW = 72,
+            GH = 32;
+          const CY = 16;
+          const g = new PIXI.Graphics();
+          const BODY = 0x2c4a6b,
+            BELLY = 0x4f81ab,
+            EDGE = 0x7fb3dc,
+            MOTTLE_DARK = 0x203c58,
+            MOTTLE_LIGHT = 0x5a8ebc,
+            PLEAT = 0x1c3450;
+
+          const inEllipse = (x, y, cx, cy, rx, ry) =>
+            ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+          // Higher power = flatter/blunter profile. This is what gives the
+          // rostrum its broad, flat-fronted look instead of tapering to a
+          // point like a generic fish silhouette would.
+          const inSuperEllipse = (x, y, cx, cy, rx, ry, p) =>
+            Math.pow(Math.abs(x - cx) / rx, p) +
+              Math.pow(Math.abs(y - cy) / ry, p) <=
+            1;
+
+          function solid(x, y) {
+            // torso: long, slender, streamlined
+            if (inEllipse(x, y, 32, CY, 21, 8.2)) return true;
+            // head/rostrum: broad, flat-fronted
+            if (inSuperEllipse(x, y, 54, CY + 0.6, 13.5, 7.0, 2.8)) return true;
+            // peduncle: narrow stalk joining body to tail
+            if (x >= 9 && x <= 16 && Math.abs(y - CY) <= 2.6 - (16 - x) * 0.12)
+              return true;
+            // fluke: broad, with a shallow center notch
+            if (x >= 1 && x <= 10) {
+              const spread = (10 - x) * 2.15 + 1.0;
+              const notch = x < 3 ? (3 - x) * 2.2 : 0;
+              if (Math.abs(y - CY) <= spread && Math.abs(y - CY) >= notch)
+                return true;
+            }
+            // pectoral fin: long and slender, angled back
+            if (inEllipse(x, y, 46, CY + 8.5, 8.5, 2.4) && y > CY + 4)
+              return true;
+            // small dorsal fin, set well back toward the tail, backswept
+            if (x >= 16 && x <= 24 && y <= CY - 7) {
+              const lx = x - 16;
+              const topEdge = CY - 7 - (4.3 - Math.abs(lx - 2.5) * 0.9);
+              if (y >= topEdge) return true;
+            }
+            return false;
+          }
+
+          // Deterministic mottling: a fixed hash instead of Math.random() so
+          // the skin pattern is stable and reviewable, not different on
+          // every reload -- easier to tell a real change from re-randomised
+          // noise while iterating on this.
+          function mottleHash(x, y) {
+            const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+            return n - Math.floor(n);
+          }
+
+          for (let y = 0; y < GH; y++) {
+            for (let x = 0; x < GW; x++) {
+              if (!solid(x, y)) continue;
+              const edge =
+                !solid(x, y - 1) ||
+                !solid(x, y + 1) ||
+                !solid(x - 1, y) ||
+                !solid(x + 1, y);
+              const belly = y > CY + 3.5;
+
+              // Ventral throat pleats: blue whales have parallel throat
+              // grooves that expand when feeding. Approximated as a few
+              // short darker dashes under the head/throat region.
+              const inThroat = x >= 42 && x <= 60 && y >= CY + 2 && y <= CY + 7;
+              const isPleatLine = inThroat && (x - 42) % 3 === 0;
+
+              let color;
+              if (edge) color = EDGE;
+              else if (isPleatLine) color = PLEAT;
+              else if (belly) color = BELLY;
+              else {
+                // Mottled skin: real blue whale skin is patchily mottled,
+                // not a flat color -- this reads well even at small scale.
+                const m = mottleHash(x, y);
+                color = m < 0.12 ? MOTTLE_DARK : m > 0.94 ? MOTTLE_LIGHT : BODY;
+              }
+              g.rect(x, y, 1, 1).fill({ color, alpha: edge ? 0.95 : 0.88 });
+            }
+          }
+
+          // blowhole spout flick + eye, repositioned for the new head
+          g.rect(56, 8, 1, 1).fill({ color: 0xbfe0f7, alpha: 0.9 });
+          g.rect(57, 7, 1, 1).fill({ color: 0xbfe0f7, alpha: 0.6 });
+          g.rect(58, 15, 1, 1).fill({ color: 0xdff0ff, alpha: 0.95 });
+
+          const tex = renderer.generateTexture(g);
+          tex.source.scaleMode = "nearest"; // keep the pixels crisp
+          g.destroy();
+          return { texture: tex, gridW: GW, gridH: GH };
+        }
+
+        const whaleTex = buildWhaleTexture(app.renderer);
+        const whaleRoot = new PIXI.Container();
+        const whaleSprite = new PIXI.Sprite(whaleTex.texture);
+        whaleSprite.anchor.set(0.5);
+        whaleRoot.addChild(whaleSprite);
+        whaleRoot.visible = false;
+
+        // Layered between sun and moon, exactly as specified: it passes OVER
+        // the sun and BEHIND the moon.
+        celestialLayer.addChild(sunRoot, whaleRoot, moonRoot);
+
+        // Idle schedule: 30s, 2min, 5min, 12min, then repeats every 15min
+        // forever -- covers someone leaving the tab open all day. Each
+        // interval is a GAP since the last sighting or the last interaction
+        // (noteUserAction() and the end of a crossing both reset the clock),
+        // not a fixed wall-clock schedule -- so active use keeps pushing it
+        // out naturally, and it only escalates during genuine idle stretches.
+        // Swap WHALE_TEST_MODE to true for fast iteration on the STRUCTURE
+        // (5 stages, last one repeats) without waiting the real ~15 minutes.
+        const WHALE_TEST_MODE = false;
+        const MIN = 60 * 1000;
+        const WHALE_SCHEDULE = WHALE_TEST_MODE
+          ? [5 * 1000, 10 * 1000, 15 * 1000, 20 * 1000, 25 * 1000]
+          : [30 * 1000, 2 * MIN, 5 * MIN, 12 * MIN, 15 * MIN];
+        let whaleStage = 0;
+        let lastActionMs = performance.now();
+        let whaleCross = null; // {t0, dur, dir, yFrac, sang}
+
+        function noteUserAction() {
+          lastActionMs = performance.now();
+          hideDragHint();
+        }
+
+        function launchWhale() {
+          const dir = Math.random() < 0.5 ? 1 : -1;
+          whaleCross = {
+            t0: performance.now(),
+            dur: 26000 + Math.random() * 8000, // slow, unhurried crossing
+            dir,
+            yFrac: 0.2 + Math.random() * 0.16, // high in the sky, near the sun band
+            sang: false,
+          };
+          whaleRoot.visible = true;
+          // Entry call is panned to whichever edge it's entering from -- it
+          // starts at the left edge when dir>0 (moving left-to-right), so
+          // the sound should start on the left too.
+          Audio.whale(true, dir > 0 ? -0.8 : 0.8);
+        }
+
+        function updateWhale(nowMs) {
+          if (!whaleCross) {
+            // Escalating idle trigger; the last interval repeats thereafter.
+            const wait =
+              WHALE_SCHEDULE[Math.min(whaleStage, WHALE_SCHEDULE.length - 1)];
+            if (nowMs - lastActionMs >= wait) {
+              whaleStage++;
+              launchWhale();
+            }
+            return;
+          }
+          const t = (nowMs - whaleCross.t0) / whaleCross.dur;
+          if (t >= 1) {
+            whaleCross = null;
+            whaleRoot.visible = false;
+            lastActionMs = performance.now(); // idle clock restarts after it leaves
+            return;
+          }
+          const W = app.screen.width,
+            H = app.screen.height;
+          const span = W + 260;
+          const px = whaleCross.dir > 0 ? -130 + span * t : W + 130 - span * t;
+          // gentle undulation, as if swimming
+          const bob = Math.sin(t * Math.PI * 3.1) * H * 0.028;
+          whaleRoot.x = Math.round(px);
+          whaleRoot.y = Math.round(H * whaleCross.yFrac + bob);
+          whaleSprite.rotation = Math.sin(t * Math.PI * 3.1 + 1.2) * 0.09;
+          whaleSprite.scale.x = whaleCross.dir > 0 ? 1 : -1; // face the way it swims
+          whaleRoot.scale.set(
+            Math.max(1.3, Math.round((BASE_DOT * 4) / whaleTex.gridH)),
+          );
+          // Pale, cool tint + lower ceiling opacity: atmospheric haze at
+          // distance, on top of it now being much smaller.
+          whaleSprite.tint = 0xbfd8f0;
+          // fade in and out at the edges so it never pops
+          whaleRoot.alpha =
+            Math.min(1, t / 0.12) * Math.min(1, (1 - t) / 0.12) * 0.55;
+          // a second call around the midpoint, panned to its actual position
+          if (!whaleCross.sang && t > 0.45) {
+            whaleCross.sang = true;
+            const posPan = Math.max(-1, Math.min(1, (px - W / 2) / (W / 2)));
+            Audio.whale(true, posPan * 0.75);
+          }
+        }
 
         // Celestial projection: same angular math as satellites, but anchored high
         // in the sky (they live beyond the satellite band) with damped horizontal
@@ -1059,13 +2963,11 @@
           const spread = Math.max(18, H * 0.045);
           for (let i = layers - 1; i >= 0; i--) {
             const frac = i / layers;
-            glowGfx
-              .circle(groundCx, groundCy, groundR + frac * spread)
-              .stroke({
-                width: spread / layers + 1.5,
-                color: 0x7ec8e3,
-                alpha: 0.16 * (1 - frac) * (1 - frac),
-              });
+            glowGfx.circle(groundCx, groundCy, groundR + frac * spread).stroke({
+              width: spread / layers + 1.5,
+              color: 0x7ec8e3,
+              alpha: 0.16 * (1 - frac) * (1 - frac),
+            });
           }
           // bright crisp rim right at the surface line
           glowGfx
@@ -1121,6 +3023,8 @@
             } else {
               snapTarget = s;
               snapping = true;
+              autoOpenDexOnArrival = false; // canvas tap always keeps the two-stage behaviour
+              Audio.select();
             }
           });
 
@@ -1274,7 +3178,31 @@
             .circle(groundCx, groundCy, groundR)
             .fill({ color: 0x2f4a63 }); // ocean
 
-          viewLon = Math.atan2(curF.y, curF.x);
+          // Longitude is genuinely UNDEFINED at the poles: standing on the axis,
+          // curF.x and curF.y both collapse to ~0 and atan2 returns whatever
+          // floating-point noise is left, swinging up to 180 degrees between
+          // consecutive frames on a perfectly steady drag. Worse, atan2 WRAPS at
+          // +/-pi, and the starfield's seamless "% W" tiling is only seamless if
+          // its input moves continuously -- so every antimeridian crossing
+          // teleported the star layer by ~652px (not a multiple of the tile
+          // width W, so it reads as a pop, not a wrap). Near a pole the view
+          // sweeps across +/-pi repeatedly, firing that pop several times a
+          // second: the visible "vibration".
+          //
+          // Fix both at once by tracking longitude as a CONTINUOUS accumulated
+          // value: take the shortest signed step toward the true bearing each
+          // frame, rate-limited so the undefined-at-the-pole noise can't
+          // teleport it, and deliberately never re-wrapped to +/-pi. Both
+          // consumers are fine with an unwrapped value -- the meridian fan feeds
+          // it through cos/sin (periodic), and the starfield's "% W" is seamless
+          // precisely when the input is continuous. Away from the poles the true
+          // change per frame is far below the cap, so normal roaming is
+          // bit-for-bit unchanged.
+          const rawLon = Math.atan2(curF.y, curF.x);
+          let dLon = rawLon - viewLon;
+          dLon = Math.atan2(Math.sin(dLon), Math.cos(dLon)); // shortest signed way round
+          const LON_MAX_STEP = 0.26; // rad/frame (~15 deg) -- above any real roam rate
+          viewLon += Math.max(-LON_MAX_STEP, Math.min(LON_MAX_STEP, dLon));
           viewLat = Math.asin(Math.max(-1, Math.min(1, curF.z)));
 
           for (const poly of landPolys) {
@@ -1365,8 +3293,18 @@
             // Integer pixel snapping: every art pixel renders as a uniform square.
             // Depth shrink quantizes into discrete sizes -- deliberate, reads as
             // authentic pixel art rather than smooth-scaled (blurry) sprites.
+            // Was 3.4. Requested a ~20% size bump, but sprite scale rounds to
+            // an INTEGER (see below) for crisp pixel art -- a literal x1.2
+            // lands exactly on a rounding boundary and produces NO visible
+            // change for several common cases, including the spotlit
+            // satellite on mobile at some sprite types (checked numerically:
+            // 3.4*1.2=4.08 -> zero change in 3 of 6 tested depth/gridH
+            // combos). 4.5 (~+32%) is the smallest value that guarantees
+            // real growth in every case that matters -- near/spotlit views
+            // especially. Also compensates for the outline removal above,
+            // which shrank each sprite's effective footprint.
             const rawScale =
-              ((BASE_DOT * 3.4) / s.texInfo.gridH) * p.scale * (1 + s.boost);
+              ((BASE_DOT * 4.5) / s.texInfo.gridH) * p.scale * (1 + s.boost);
             const spriteScale = Math.max(1, Math.round(rawScale));
             s.sprite.scale.set(spriteScale);
             const label = s.marker.children[1];
@@ -1409,7 +3347,11 @@
               const push = (clearR - d) * blend;
               s.marker.x = Math.round(s.marker.x + (dx / d) * push);
               s.marker.y = Math.round(s.marker.y + (dy / d) * push);
-              s.marker.alpha *= 1 - 0.3 * blend;
+              // Alpha dimming removed here too -- same ghosting problem as
+              // the depth fade above, and it's redundant with the outline
+              // now handling cluster-separation instead (see
+              // buildSpriteTextures). The positional push above still keeps
+              // overlapping sprites from sitting exactly on top of each other.
             }
           }
 
@@ -1520,6 +3462,7 @@
           dexEl.classList.add("open");
           dexEl.setAttribute("aria-hidden", "false");
           document.getElementById("dex-close").focus();
+          Audio.enterDex(); // bed out, metallic strike, then dry room tone
         }
 
         function closeDex() {
@@ -1527,6 +3470,7 @@
           dexEl.setAttribute("aria-hidden", "true");
           dexSat = null;
           app.canvas.focus();
+          Audio.exitDex(); // room tone out, roaming bed swells back in
         }
 
         document
@@ -1563,19 +3507,20 @@
         function nadirSteer(dx, dy) {
           // Rotate the whole view frame so the map content follows the finger:
           // drag right -> centre moves west, drag down -> centre moves north.
-          let east = { x: -baseF.y, y: baseF.x, z: 0 };
-          const eL = Math.hypot(east.x, east.y, east.z);
-          if (eL < 1e-6) return;
-          east = { x: east.x / eL, y: east.y / eL, z: east.z / eL };
-          const north = {
-            x: baseF.y * east.z - baseF.z * east.y,
-            y: baseF.z * east.x - baseF.x * east.z,
-            z: baseF.x * east.y - baseF.y * east.x,
-          };
+          //
+          // Axes come from baseR/baseU (the camera's own continuously-updated
+          // orthonormal frame) rather than being rebuilt from world Z each call.
+          // The old world-Z rebuild (east = normalize(-baseF.y, baseF.x, 0))
+          // degenerated whenever baseF approached a world pole -- east shrank
+          // toward zero length and the drag direction became numerically
+          // undefined (or just stopped responding via the eL<1e-6 guard).
+          // baseR/baseU can't hit that singularity: they're never derived from
+          // baseF's world position, only from their own prior rotation, which
+          // is exactly why the main canvas drag below already relies on them.
           const R = nadirRect.R || 1;
           for (const [axis, ang] of [
-            [north, -dx / R],
-            [east, -dy / R],
+            [baseU, -dx / R],
+            [baseR, -dy / R],
           ]) {
             if (!ang) continue;
             baseF = rotAxis(baseF, axis, ang);
@@ -1588,11 +3533,13 @@
         }
 
         app.canvas.addEventListener("pointerdown", (e) => {
+          noteUserAction();
           const pt = canvasPoint(e);
           if (inNadir(pt)) {
             nadirDragging = true;
             snapping = false;
             snapTarget = null;
+            autoOpenDexOnArrival = false; // interrupting any pending search-triggered snap
             nlx = pt.x;
             nly = pt.y;
             return; // the panel takes this gesture; the world drag must not also fire
@@ -1620,6 +3567,7 @@
             dragging = true;
             snapping = false;
             snapTarget = null; // now it's a real drag: free-roam takes over
+            autoOpenDexOnArrival = false;
             app.canvas.classList.add("dragging");
           }
           const yaw = -dx * SENS;
@@ -1653,10 +3601,29 @@
         });
 
         // wheel = roam too (trackpads pan naturally); never zoom
+        //
+        // Snapping is deliberately deferred to the END of the scroll gesture.
+        // Setting snapping=true on every wheel event let applySnapStep run on
+        // the frames BETWEEN events, easing the view toward the nearest
+        // satellite mid-scroll -- a sideways pull perpendicular to the travel
+        // direction, so a pure-vertical scroll visibly curved off to one side
+        // (measured: 17-42 degrees of lateral drift with deltaX exactly 0).
+        // It was speed-dependent because a fast flick leaves almost no idle
+        // frames for the snap to act, while a slow scroll leaves many.
+        // Wheel has no native "gesture end" event, so debounce it: the drag
+        // path gets the same effect for free via pointerup.
+        let wheelSnapTimer = null;
+        // 250ms: long enough to bridge trackpad scrolling (~16ms between events)
+        // and unhurried mouse-wheel notches, short enough that the settle still
+        // feels responsive when you stop. Gaps longer than this are treated as
+        // separate gestures -- one deliberate wheel click, then a snap, which is
+        // the intended snap-to-nearest behaviour rather than a bug.
+        const WHEEL_SNAP_DELAY_MS = 250;
         app.canvas.addEventListener(
           "wheel",
           (e) => {
             e.preventDefault();
+            noteUserAction();
             const yaw = -e.deltaX * SENS * 0.4;
             const pitch = -e.deltaY * SENS * 0.4;
             const F1 = rotAxis(baseF, baseU, yaw);
@@ -1667,7 +3634,14 @@
             curF = baseF;
             curR = baseR;
             curU = baseU;
-            snapping = true;
+            // Cancel any snap still easing from a previous gesture, so it can't
+            // fight the scroll that is happening right now.
+            snapping = false;
+            snapTarget = null;
+            clearTimeout(wheelSnapTimer);
+            wheelSnapTimer = setTimeout(() => {
+              snapping = true;
+            }, WHEEL_SNAP_DELAY_MS);
           },
           { passive: false },
         );
@@ -1679,6 +3653,11 @@
         // spotlight satellite is currently above, which is literally the view that
         // satellite has. Graticule included so position is actually readable.
         const nadirLayer = new PIXI.Container();
+        nadirLayer.visible = !PREVIEW_MODE; // keep the embed a clean, uncluttered chunk
+        // Orientation of the nadir map's "east" axis, expressed as an angle in
+        // the stable camera plane (curR, curU). Persisted across frames so it
+        // can be rate-limited -- see drawNadir for why.
+        let nadirPhi = 0;
         const nadirGfx = new PIXI.Graphics();
         const nadirTitle = new PIXI.Text({
           text: "",
@@ -1707,7 +3686,8 @@
           // snap aligns curF with the selected satellite, so a spotlighted satellite
           // still sits dead centre -- but the panel stays alive and moves
           // continuously while dragging instead of blinking out.
-          nadirLayer.visible = true;
+          nadirLayer.visible = !PREVIEW_MODE;
+          if (PREVIEW_MODE) return; // nothing further to draw for a hidden panel
           nadirGfx.clear();
 
           const size = Math.max(120, Math.min(210, Math.min(W, H) * 0.22));
@@ -1732,19 +3712,44 @@
           nadirGfx.circle(cx, cy, R).fill({ color: 0x2f4a63 });
 
           const up = curF;
-          let east = { x: -up.y, y: up.x, z: 0 };
-          let eL = Math.hypot(east.x, east.y, east.z);
-          if (eL < 1e-6) {
-            east = { x: 1, y: 0, z: 0 };
-            eL = 1;
+          const dotv = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+          // The map is north-up, but "north" is UNDEFINED standing on the axis:
+          // east = (-up.y, up.x, 0) shrinks to zero length there, so its
+          // direction became pure floating-point noise and the old
+          // `if (eL < 1e-6) east = (1,0,0)` guard snapped it discontinuously.
+          // Measured on a constant-rate pole crossing, the map accelerated into
+          // a spin and then flipped 173.6 degrees in ONE frame -- the mini-map
+          // visibly revolving on the spot.
+          //
+          // Note east is always perpendicular to up, so it necessarily lies in
+          // the span of curR and curU -- a basis that never degenerates. Track
+          // east as an ANGLE in that stable plane and rate-limit it, exactly as
+          // viewLon is handled. Away from the poles the true angle moves far
+          // less than the cap per frame, so north-up is preserved bit-for-bit;
+          // only inside the tiny polar cap, where north is meaningless anyway,
+          // does the map coast through instead of snapping.
+          let wEast = { x: -up.y, y: up.x, z: 0 };
+          const wL = Math.hypot(wEast.x, wEast.y, wEast.z);
+          if (wL > 1e-9) {
+            wEast = { x: wEast.x / wL, y: wEast.y / wL, z: wEast.z / wL };
+            const rawPhi = Math.atan2(dotv(wEast, curU), dotv(wEast, curR));
+            let dPhi = rawPhi - nadirPhi;
+            dPhi = Math.atan2(Math.sin(dPhi), Math.cos(dPhi)); // shortest signed way round
+            const PHI_MAX_STEP = 0.26; // rad/frame (~15 deg), above any real roam rate
+            nadirPhi += Math.max(-PHI_MAX_STEP, Math.min(PHI_MAX_STEP, dPhi));
           }
-          east = { x: east.x / eL, y: east.y / eL, z: east.z / eL };
+          const cP = Math.cos(nadirPhi),
+            sP = Math.sin(nadirPhi);
+          const east = {
+            x: curR.x * cP + curU.x * sP,
+            y: curR.y * cP + curU.y * sP,
+            z: curR.z * cP + curU.z * sP,
+          };
           const north = {
             x: up.y * east.z - up.z * east.y,
             y: up.z * east.x - up.x * east.z,
             z: up.x * east.y - up.y * east.x,
           };
-          const dotv = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
           const orth = (v) => ({
             x: cx + dotv(v, east) * R,
             y: cy - dotv(v, north) * R,
@@ -1843,12 +3848,10 @@
             if (!s.ok || dotv(s.v, up) <= 0) continue;
             const p = orth(s.v);
             const isSpot = s === sat;
-            nadirGfx
-              .circle(p.x, p.y, isSpot ? 3.2 : 2.2)
-              .fill({
-                color: isSpot ? 0xf2b84b : 0xd8dce6,
-                alpha: isSpot ? 1 : 0.62,
-              });
+            nadirGfx.circle(p.x, p.y, isSpot ? 3.2 : 2.2).fill({
+              color: isSpot ? 0xf2b84b : 0xd8dce6,
+              alpha: isSpot ? 1 : 0.62,
+            });
           }
 
           nadirGfx
@@ -1873,9 +3876,87 @@
         }
 
         // ---------------- main loop ----------------
+        // ---------------- TEMPORARY DEBUG HUD (press D to toggle) ------------
+        // Diagnostic only -- delete once the roam behaviour is settled. Shows
+        // which code path is actually moving the view each frame, so a reported
+        // "it curves" can be attributed to drag, wheel, or snap instead of guessed.
+        const dbg = document.createElement("div");
+        dbg.style.cssText =
+          "position:fixed;left:8px;top:8px;z-index:9999;display:none;" +
+          "font:11px ui-monospace,Menlo,Consolas,monospace;color:#9ff;" +
+          "background:rgba(5,10,20,.82);padding:8px 10px;border:1px solid #2b3852;" +
+          "border-radius:6px;white-space:pre;pointer-events:none;line-height:1.45";
+        document.body.appendChild(dbg);
+        window.addEventListener("keydown", (e) => {
+          if (e.key === "d" || e.key === "D")
+            dbg.style.display = dbg.style.display === "none" ? "block" : "none";
+        });
+        let dbgPrevLat = null,
+          dbgPrevLon = null,
+          dbgMaxSideways = 0;
+        function updateDebug() {
+          if (dbg.style.display === "none") return;
+          const lat =
+            (Math.asin(Math.max(-1, Math.min(1, curF.z))) * 180) / Math.PI;
+          const lon = (Math.atan2(curF.y, curF.x) * 180) / Math.PI;
+          let dLat = 0,
+            dLon = 0;
+          if (dbgPrevLat !== null) {
+            dLat = lat - dbgPrevLat;
+            dLon = lon - dbgPrevLon;
+            if (dLon > 180) dLon -= 360;
+            if (dLon < -180) dLon += 360;
+          }
+          dbgPrevLat = lat;
+          dbgPrevLon = lon;
+          // sideways motion = longitude change scaled by cos(lat): the actual
+          // ground-distance drift perpendicular to a pure north-south path
+          const sideways = Math.abs(dLon * Math.cos((lat * Math.PI) / 180));
+          if (dragging || snapping)
+            dbgMaxSideways = Math.max(dbgMaxSideways, sideways);
+
+          let maxSatLat = 0;
+          for (const s of catalog)
+            if (s.ok) maxSatLat = Math.max(maxSatLat, Math.abs(s.v.z));
+          maxSatLat = (Math.asin(Math.min(1, maxSatLat)) * 180) / Math.PI;
+
+          const mover = dragging
+            ? "DRAG"
+            : nadirDragging
+              ? "NADIR-DRAG"
+              : snapping
+                ? "SNAP  <-- moving you"
+                : "idle";
+          dbg.textContent =
+            `mover      ${mover}\n` +
+            `lat/lon    ${lat.toFixed(2)}  ${lon.toFixed(2)}\n` +
+            `d/frame    lat ${dLat.toFixed(3)}   lon ${dLon.toFixed(3)}\n` +
+            `sideways   ${sideways.toFixed(3)} deg/frame  (peak ${dbgMaxSideways.toFixed(2)})\n` +
+            `snapTarget ${snapTarget ? snapTarget.name || snapTarget.norad_id : "none"}\n` +
+            `max sat lat ${maxSatLat.toFixed(2)}   in polar cap: ${Math.abs(lat) > maxSatLat + 1.5 ? "YES" : "no"}\n` +
+            `press D to hide`;
+        }
+
         let nadirTick = 0;
         app.ticker.add(() => {
+          if (PREVIEW_MODE) {
+            // Gentle continuous auto-roam so the embed has visible life with
+            // no input at all -- exactly the yaw-about-baseU rotation the
+            // wheel handler uses, just a small constant step every frame
+            // instead of being driven by a delta. ~1 deg/s, a full loop
+            // roughly every 6 minutes -- meant to be glanced at, not watched.
+            const idleYaw = -0.00028;
+            const F1 = rotAxis(baseF, baseU, idleYaw);
+            const R1 = rotAxis(baseR, baseU, idleYaw);
+            baseF = F1;
+            baseR = R1;
+            curF = baseF;
+            curR = baseR;
+            curU = baseU;
+          }
           if (snapping) applySnapStep();
+          updateWhale(performance.now());
+          updateDebug();
           drawFrame();
           if (nadirDragging || snapping || dragging || nadirTick++ % 6 === 0)
             drawNadir(currentSpotSat);

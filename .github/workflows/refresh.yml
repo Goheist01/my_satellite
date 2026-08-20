@@ -1,0 +1,51 @@
+name: Refresh satellite data
+
+on:
+  schedule:
+    # Every 6 hours, offset 17 minutes past the hour rather than exactly on
+    # it -- GitHub's own guidance is that the top of the hour is the busiest
+    # queue window and schedules there see the most delay.
+    - cron: '17 3,9,15,21 * * *'
+  workflow_dispatch: # lets you trigger a run manually from the Actions tab, for testing
+
+permissions:
+  contents: write # needed to commit data/*.json back to the repo
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run refresh script
+        id: refresh
+        run: python3 scripts/refresh_data.py
+        # Let later steps run even if this fails, so status.json (which
+        # records exactly what failed) still gets committed. The job is
+        # still failed for real at the end -- see the last step.
+        continue-on-error: true
+
+      - name: Commit changes, if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if ! git diff --staged --quiet; then
+            git commit -m "Scheduled data refresh $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+          else
+            echo "Nothing changed -- no commit this run."
+          fi
+
+      - name: Fail the job if the refresh script failed
+        if: steps.refresh.outcome == 'failure'
+        run: |
+          echo "refresh_data.py exited non-zero -- see the 'Run refresh script' step above for details."
+          exit 1

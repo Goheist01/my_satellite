@@ -7,6 +7,14 @@
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
     />
     <title>My_Satellite</title>
+    <!-- Inline data-URI favicon -- same "no external asset files" approach
+         as everything else in the app. A small dark planet with a bright
+         satellite dot, in the existing palette. Closes the one harmless but
+         visible browser-favicon-404 console line. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='19' r='10' fill='%231a2d47' stroke='%236ea8dc' stroke-width='1'/><circle cx='25' cy='9' r='3' fill='%239fd0f0'/></svg>"
+    />
     <!-- Text-subsetted: only the glyphs actually used in "My_Satellite" are
          downloaded, not the full font family. Keeps this to a few KB, which
          matters given the project's mobile data budget. If the title text

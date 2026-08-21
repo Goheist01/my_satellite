@@ -43,14 +43,14 @@ depth than a fixed-axis scroll ever could.
 
 All six original stages are complete:
 
-| Stage | What it was | Status |
-|---|---|---|
-| 1 | Curated satellite catalog, verified NORAD IDs | Done — 25 satellites across NASA, NOAA, ESA, JAXA |
-| 2 | Live position math (SGP4) | Done — client-side via satellite.js |
-| 3 | Stylized rendering surface | Done — pivoted to the little-planet trackball |
-| 4 | Clickable satellites, info panel | Done — plus search/filter, live capture imagery, instrument explainers (well beyond original MVP scope) |
-| 5 | Decorative lattice between satellites | Done — nearest-neighbor (k=2), recalculated every frame |
-| 6 | Package & deploy | This document |
+| Stage | What it was                                   | Status                                                                                                  |
+| ----- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 1     | Curated satellite catalog, verified NORAD IDs | Done — 25 satellites across NASA, NOAA, ESA, JAXA                                                       |
+| 2     | Live position math (SGP4)                     | Done — client-side via satellite.js                                                                     |
+| 3     | Stylized rendering surface                    | Done — pivoted to the little-planet trackball                                                           |
+| 4     | Clickable satellites, info panel              | Done — plus search/filter, live capture imagery, instrument explainers (well beyond original MVP scope) |
+| 5     | Decorative lattice between satellites         | Done — nearest-neighbor (k=2), recalculated every frame                                                 |
+| 6     | Package & deploy                              | This document                                                                                           |
 
 ## Architecture
 
@@ -129,7 +129,7 @@ future work, explicitly scoped as a separate later stage, not attempted
 here.** This is an honest design choice, not a placeholder apologizing for
 missing work.
 
-Where a picture *is* available, it comes from one of two genuinely
+Where a picture _is_ available, it comes from one of two genuinely
 different mechanisms:
 
 - **GOES (16/19):** a stable, always-current URL straight from NOAA's own
@@ -149,13 +149,15 @@ my_satellite/
 ├── .github/
 │   └── workflows/
 │       └── refresh.yml        # scheduled Action: every 6h, see above
+├── catalog/
+│   ├── satellites.py           # hand-curated source of truth -- edit THIS to add/remove satellites
+│   └── build_catalog.py        # validates satellites.py, writes data/satellites.json
 ├── data/
-│   ├── satellites.json        # curated catalog (committed, hand-maintained)
-│   ├── tle.json                # live orbital elements (generated, self-throttled ~48h)
-│   ├── captures.json           # resolved "last capture" imagery pointers (generated)
-│   └── status.json             # heartbeat + per-source success/error tracking (generated)
+│   ├── satellites.json         # generated FROM catalog/, committed since the static site fetches it at runtime
+│   ├── tle.json                 # live orbital elements (generated, self-throttled ~48h)
+│   ├── captures.json            # resolved "last capture" imagery pointers (generated)
+│   └── status.json              # heartbeat + per-source success/error tracking (generated)
 ├── scripts/
-│   ├── build_catalog.py        # validates data/satellites.json (dup IDs, plausible years, etc.)
 │   └── refresh_data.py         # the scheduled fetch/resolve script -- see below
 ├── web/
 │   └── index.html              # the entire client app -- single file, no build step
@@ -166,16 +168,36 @@ my_satellite/
 
 ## What each script does
 
-**`scripts/build_catalog.py`** — takes the hand-curated satellite list and
-validates it before writing `data/satellites.json`: no duplicate NORAD IDs,
-no duplicate catalog IDs, launch years in a plausible range, descriptions
-short enough to actually fit an info-panel line. Run this after editing the
-catalog by hand, before anything else touches it.
+**`catalog/satellites.py`** — the actual hand-curated source of truth. A
+plain Python list of dicts, one per satellite, each with a NORAD ID, agency,
+launch year, data type, a one-line description, and an optional status note
+for anything in a notable transitional state (e.g. Terra winding down toward
+end of mission). Every NORAD ID here was cross-checked against a primary
+source before being added — the file's own docstring is explicit that a
+wrong ID means the whole pipeline propagates the wrong object entirely, not
+a graceful failure. It also documents _exclusions on purpose_ — Landsat 7
+and the original NOAA-19 (both decommissioned), GOES-17 (in-orbit backup,
+not a primary source), Sentinel-1B (failed 2021) — so a later editor
+doesn't accidentally re-add something that was deliberately left out.
 
-**`scripts/refresh_data.py`** — the scheduled pipeline. Fetches TLEs from
-CelesTrak (self-throttled, see above), resolves capture imagery for
-Sentinel-2 and Landsat via Earth Search STAC (platform-filtered,
-quality-filtered), and writes the status heartbeat. Safe to run manually:
+**`catalog/build_catalog.py`** — validates `satellites.py` before writing
+`data/satellites.json`, the artifact the live app actually fetches. Checks
+every required field is present and correctly typed, NORAD IDs are in a
+plausible range (extended to 6 digits for CelesTrak's post-2026 catalog
+numbers), no duplicate NORAD ID _or_ duplicate name, launch years fall
+between 1957 and now, and descriptions stay under ~200 characters so they
+actually fit a one-line info panel. Run this after hand-editing
+`satellites.py`, before anything else touches the result:
+
+```bash
+python3 catalog/build_catalog.py
+```
+
+**`scripts/refresh_data.py`** — the scheduled pipeline, entirely separate
+from the catalog above. Fetches TLEs from CelesTrak (self-throttled, see
+above), resolves capture imagery for Sentinel-2 and Landsat via Earth
+Search STAC (platform-filtered, quality-filtered), and writes the status
+heartbeat. Safe to run manually:
 
 ```bash
 pip install -r requirements.txt
@@ -193,9 +215,9 @@ fix — not just "tried something, seemed fine."
 **Gimbal lock at the poles, three separate times.** The camera's rotation
 math was correct from the start (a straight vertical drag provably traces a
 true great circle — verified analytically and numerically). The actual bugs
-were all in code *around* that math: the nadir mini-map's steering function
+were all in code _around_ that math: the nadir mini-map's steering function
 rebuilt its east/north basis from world-Z each frame, which degenerates
-exactly at the poles; the mini-map's *drawing* code had the identical bug,
+exactly at the poles; the mini-map's _drawing_ code had the identical bug,
 independently, because fixing the steering code didn't touch the separate
 function that renders it; and the auto-snap-to-nearest-satellite behavior
 had a hard ceiling at ~82° latitude, because the catalog's sun-synchronous
@@ -207,7 +229,7 @@ than continuing to guess.
 
 **Orbital position math was silently missing Earth's rotation.** An early
 version of the server-side position calculation converted a satellite's raw
-SGP4 output directly to longitude — but that raw output is in an *inertial*
+SGP4 output directly to longitude — but that raw output is in an _inertial_
 reference frame that doesn't rotate with the Earth. The bug was invisible
 in a spot-check and only showed up when tested across a time gap: the same
 satellite, propagated 6 hours apart, should show roughly 90° of apparent
@@ -216,7 +238,7 @@ none. Fixed using `skyfield`'s proper frame conversion instead of hand-rolled
 trigonometry.
 
 **CelesTrak's `FORMAT=JSON` doesn't contain TLE lines.** It returns OMM-style
-numeric orbital elements — a different *representation* of the same orbit,
+numeric orbital elements — a different _representation_ of the same orbit,
 not TLE text with a different wrapper. `FORMAT=TLE` was the actual fix,
 verified against a live response before trusting it.
 
@@ -233,7 +255,7 @@ through.
 came back as a flat white image despite loading successfully — direct
 inspection confirmed it wasn't a rendering bug, the source image itself was
 genuinely blank. The cause: Sentinel-2's STAC metadata tracks cloud cover
-and no-data percentage as two *independent* dimensions — a real example
+and no-data percentage as two _independent_ dimensions — a real example
 item had 0.4% cloud cover and 77% no-data simultaneously, an edge-of-swath
 tile that passed a naive cloud check while being almost entirely empty. The
 fix filters on both and prefers the most recent scene that clears a
@@ -243,7 +265,7 @@ capture at all.
 
 **An absolute-path bug that only breaks on the real deployment target.**
 Every data fetch used a leading-slash path (`/data/tle.json`), which
-resolves against the browser's *origin*, not wherever the page happens to
+resolves against the browser's _origin_, not wherever the page happens to
 sit. That's invisible testing locally, because a local dev server run from
 the project root makes the origin and the project root coincide by
 accident. GitHub Pages serves project sites from a subpath
@@ -280,6 +302,7 @@ shapes using the actual browser URL-resolution algorithm before shipping.
 ```bash
 python3 -m http.server 8000   # from the project root
 ```
+
 Then open `http://localhost:8000/web/index.html`.
 
 ## License

@@ -217,11 +217,46 @@ def sentinel2_id_prefix(name):
     return f"S2{suffix[0].upper()}_"
 
 
+# Thresholds are deliberately loose -- the goal is filtering out clearly-bad
+# candidates (near-total cloud, near-total nodata), not hunting for a
+# picture-perfect scene. A real capture found in testing passed through
+# with eo:cloud_cover fine but was a flat white image -- confirmed via a
+# real STAC example item that s2:nodata_pixel_percentage is a SEPARATE
+# quality dimension from cloud cover (one real item had 0.4% cloud cover
+# and 77% nodata simultaneously), which cloud-cover-only filtering would
+# have completely missed.
+CLOUD_COVER_MAX = 50
+NODATA_MAX = 20
+
+
+def _stac_quality_ok(props):
+    cloud = props.get("eo:cloud_cover")
+    if cloud is not None and cloud > CLOUD_COVER_MAX:
+        return False
+    nodata = props.get("s2:nodata_pixel_percentage")
+    if nodata is not None and nodata > NODATA_MAX:
+        return False
+    return True
+
+
+def _pick_best_scene(features):
+    """Most recent scene that clears the quality bar; if NOTHING clears it,
+    falls back to pure most-recent regardless -- a flawed real image still
+    beats reporting no capture at all. Never returns nothing just because
+    every candidate in the window happened to be imperfect."""
+    if not features:
+        return None
+    quality = [f for f in features if _stac_quality_ok(f.get("properties", {}))]
+    pool = quality if quality else features
+    return max(pool, key=lambda f: f.get("properties", {}).get("datetime", ""))
+
+
 def resolve_sentinel2_capture(lat, lon, id_prefix):
-    """POST search, most recent scene within STAC_SEARCH_WINDOW_DAYS near the
-    satellite's current sub-point. Picks the max properties.datetime
-    client-side rather than relying on server-side sort support, which
-    wasn't something I could verify directly.
+    """POST search, then the highest-quality recent scene within
+    STAC_SEARCH_WINDOW_DAYS near the satellite's current sub-point (see
+    _pick_best_scene) -- picked client-side rather than relying on
+    server-side sort/filter support, which wasn't something I could verify
+    directly.
 
     id_prefix filters results to scenes actually captured by THIS satellite
     (e.g. 'S2A_') -- without this, the search returns whatever's nearest in
@@ -242,12 +277,81 @@ def resolve_sentinel2_capture(lat, lon, id_prefix):
     }
     data = fetch_json(STAC_SEARCH_URL, method="POST", body=body)
     features = [f for f in data.get("features", []) if f.get("id", "").startswith(id_prefix)]
-    if not features:
+    best = _pick_best_scene(features)
+    if not best:
         return None
-    best = max(features, key=lambda f: f.get("properties", {}).get("datetime", ""))
     thumb = best.get("assets", {}).get("thumbnail", {}).get("href")
     if not thumb:
         return None
+    return {
+        "url": thumb,
+        "captured_at": best.get("properties", {}).get("datetime"),
+        "scene_id": best.get("id"),
+        "resolved_at": now_iso(),
+    }
+
+
+# ---------------- captures: Landsat via Earth Search STAC ----------------
+
+
+def landsat_id_prefix(name):
+    """'Landsat 8' -> 'LC08_', 'Landsat 9' -> 'LC09_', matching Earth Search's
+    Landsat item id convention (e.g. LC09_L2SR_145060_20230307_02_T1).
+    Earlier Landsats (4/5/7) use different sensor prefixes (LT/LE) -- not
+    handled here since none are in this catalog, but that's why this isn't
+    just 'L' + the number."""
+    name = (name or "").strip()
+    if not name.lower().startswith("landsat "):
+        return None
+    num = name.split()[-1].strip()
+    if not num.isdigit():
+        return None
+    return f"LC{int(num):02d}_"
+
+
+def resolve_landsat_capture(lat, lon, id_prefix):
+    """Same search shape as Sentinel-2, but the URL extraction is genuinely
+    different, not just copy-pasted: Landsat's assets.thumbnail.href points
+    into a REQUESTER-PAYS S3 bucket (confirmed directly against Element84's
+    own published example item -- storage:requester_pays: true on that
+    asset), which needs AWS credentials a browser can never provide. Earth
+    Search separately publishes an API-rendered thumbnail via a 'thumbnail'
+    link relation (a plain public HTTPS endpoint under the item's own API
+    path), which is what actually works here. Falls back to constructing
+    that same URL shape directly if the link isn't present in the response
+    for some reason, since the shape itself is a documented, stable Earth
+    Search convention, not a guess."""
+    end = datetime.now(timezone.utc)
+    start = end - timedelta(days=STAC_SEARCH_WINDOW_DAYS)
+    pad = 0.5
+    body = {
+        "collections": ["landsat-c2-l2"],
+        "bbox": [lon - pad, lat - pad, lon + pad, lat + pad],
+        "datetime": f"{start.strftime('%Y-%m-%dT%H:%M:%SZ')}/{end.strftime('%Y-%m-%dT%H:%M:%SZ')}",
+        "limit": 20,
+    }
+    data = fetch_json(STAC_SEARCH_URL, method="POST", body=body)
+    features = [f for f in data.get("features", []) if f.get("id", "").startswith(id_prefix)]
+    # Reuses the same quality bar as Sentinel-2. Only eo:cloud_cover is
+    # confirmed present on Landsat items (verified against documentation);
+    # s2:nodata_pixel_percentage is a Sentinel-2-specific property name and
+    # likely won't be present here, but _stac_quality_ok() already treats a
+    # missing property as "doesn't fail that check" rather than erroring, so
+    # this safely degrades to a cloud-cover-only filter for Landsat without
+    # guessing at a property name I haven't verified exists for it.
+    best = _pick_best_scene(features)
+    if not best:
+        return None
+
+    thumb = None
+    for link in best.get("links", []):
+        if link.get("rel") == "thumbnail":
+            thumb = link.get("href")
+            break
+    if not thumb:
+        self_href = STAC_SEARCH_URL.rsplit("/search", 1)[0]
+        thumb = f"{self_href}/collections/landsat-c2-l2/items/{best.get('id')}/thumbnail"
+
     return {
         "url": thumb,
         "captured_at": best.get("properties", {}).get("datetime"),
@@ -262,9 +366,12 @@ def resolve_captures(catalog, tle_data, status):
     for sat in catalog:
         norad = str(sat["norad_id"])
         name = sat.get("name") or ""
-        id_prefix = sentinel2_id_prefix(name)
-        if not id_prefix:
-            continue  # only source implemented so far -- see module docstring re: GOES
+
+        s2_prefix = sentinel2_id_prefix(name)
+        ls_prefix = landsat_id_prefix(name)
+        if not s2_prefix and not ls_prefix:
+            continue  # no resolver for this type yet -- see module docstring re: GOES
+
         tle = tle_data.get(norad)
         if not tle:
             errors[norad] = "no TLE available to compute current position"
@@ -274,11 +381,16 @@ def resolve_captures(catalog, tle_data, status):
             errors[norad] = "propagation failed"
             continue
         try:
-            cap = resolve_sentinel2_capture(*pos, id_prefix)
+            if s2_prefix:
+                cap = resolve_sentinel2_capture(*pos, s2_prefix)
+                label = s2_prefix.rstrip("_")
+            else:
+                cap = resolve_landsat_capture(*pos, ls_prefix)
+                label = ls_prefix.rstrip("_")
             if cap:
                 out[norad] = cap
             else:
-                errors[norad] = f"no recent {id_prefix.rstrip('_')} scene found in search window"
+                errors[norad] = f"no recent {label} scene found in search window"
         except (urllib.error.URLError, urllib.error.HTTPError) as e:
             errors[norad] = str(e)
         time.sleep(0.5)

@@ -515,6 +515,235 @@
         border-color: #3d5f86;
       }
 
+      /* ---- last-capture overlay ---- */
+      /* Sits above the dex (z-index 10) but below the start screen (20),
+         which never overlaps it in practice since dex only opens post-BEGIN. */
+      #capture-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 15;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(4, 7, 14, 0.94);
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 240ms ease;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      #capture-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #capture-frame {
+        position: relative;
+        width: min(1100px, 94vw);
+        max-height: 78vh;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #2b3852;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+        background: #0a0f1a;
+      }
+      #capture-img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 78vh;
+        object-fit: contain;
+        opacity: 0;
+        transition: opacity 200ms ease;
+      }
+      #capture-img.loaded {
+        opacity: 1;
+      }
+      /* Loading state: a slow, quiet pulse rather than a blank flash or a
+         spinner -- matches the calm tone the rest of the app has settled
+         into, and reads as "working" without demanding attention. */
+      #capture-frame.loading::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          120deg,
+          #0d1520 0%,
+          #14203380 50%,
+          #0d1520 100%
+        );
+        background-size: 200% 100%;
+        animation: capturePulse 2.4s ease-in-out infinite;
+      }
+      @keyframes capturePulse {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      /* Scan-line sweep: ONE clean pass on arrival, then gone. Not a
+         continuous static/glitch effect -- deliberately dropped that idea
+         since it would fight both the image's own clarity and the calm
+         tone established everywhere else in the app. This is closer to
+         "signal acquired" than "broken transmission". */
+      #capture-frame.sweeping::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: -20%;
+        width: 100%;
+        height: 40%;
+        background: linear-gradient(
+          180deg,
+          transparent 0%,
+          rgba(180, 220, 255, 0.16) 45%,
+          rgba(220, 240, 255, 0.28) 50%,
+          rgba(180, 220, 255, 0.16) 55%,
+          transparent 100%
+        );
+        animation: captureSweep 900ms cubic-bezier(0.3, 0, 0.2, 1) forwards;
+        pointer-events: none;
+      }
+      @keyframes captureSweep {
+        from {
+          top: -20%;
+        }
+        to {
+          top: 100%;
+        }
+      }
+      #capture-meta {
+        display: flex;
+        gap: 28px;
+        margin-top: 16px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: #8891a8;
+        text-align: center;
+      }
+      #capture-meta .label {
+        color: #52678a;
+        margin-right: 6px;
+      }
+      #capture-error {
+        color: #8891a8;
+        font-size: 13px;
+        letter-spacing: 0.05em;
+        padding: 40px;
+        text-align: center;
+        display: none;
+      }
+      #capture-close {
+        position: absolute;
+        top: 18px;
+        right: 22px;
+        background: rgba(13, 20, 32, 0.86);
+        border: 1px solid #2b3852;
+        color: #cfd7e6;
+        font:
+          12px ui-monospace,
+          "SF Mono",
+          Menlo,
+          Consolas,
+          monospace;
+        letter-spacing: 0.1em;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: border-color 180ms ease;
+      }
+      #capture-close:hover,
+      #capture-close:focus-visible {
+        border-color: #6ea8dc;
+        outline: none;
+      }
+
+      /* ---- "Data" overlay: the fallback for satellites with no capture
+         image (either non-imaging instruments -- altimeters, radar
+         sounders -- or imaging types with no resolver built yet). Every
+         satellite gets SOME button now, never a dead end. ---- */
+      #data-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 15;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(4, 7, 14, 0.94);
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 240ms ease;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      #data-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #data-panel {
+        position: relative;
+        width: min(640px, 90vw);
+        background: linear-gradient(180deg, #121a2b 0%, #0d1420 100%);
+        border: 1px solid #2b3852;
+        border-radius: 14px;
+        padding: 32px 34px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+      }
+      #data-title {
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        color: #cfd7e6;
+        margin: 0 0 4px;
+      }
+      #data-sensor {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: #5f7f9d;
+        margin: 0 0 20px;
+      }
+      #data-live {
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        color: #9fd0f0;
+        background: rgba(20, 32, 51, 0.6);
+        border: 1px solid #2b3852;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 18px;
+      }
+      #data-explainer {
+        font-size: 13px;
+        line-height: 1.7;
+        color: #b6bdcc;
+        letter-spacing: 0.01em;
+      }
+      #data-close {
+        position: absolute;
+        top: 18px;
+        right: 22px;
+        background: rgba(13, 20, 32, 0.86);
+        border: 1px solid #2b3852;
+        color: #cfd7e6;
+        font:
+          12px ui-monospace,
+          "SF Mono",
+          Menlo,
+          Consolas,
+          monospace;
+        letter-spacing: 0.1em;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: border-color 180ms ease;
+      }
+      #data-close:hover,
+      #data-close:focus-visible {
+        border-color: #6ea8dc;
+        outline: none;
+      }
+
       /* ---- satellite search / filter panel ---- */
       /* Upper-left, inside the top half the layout design already reserves
          for UI. display:none until the catalog finishes loading (same
@@ -800,6 +1029,32 @@
       </div>
     </div>
 
+    <div id="capture-overlay" aria-hidden="true">
+      <button id="capture-close" type="button">Close</button>
+      <div id="capture-frame">
+        <img id="capture-img" alt="" />
+        <div id="capture-error">Image unavailable right now.</div>
+      </div>
+      <div id="capture-meta">
+        <div>
+          <span class="label">Captured</span><span id="capture-when"></span>
+        </div>
+        <div>
+          <span class="label">Refresh</span><span id="capture-refresh"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="data-overlay" aria-hidden="true">
+      <div id="data-panel">
+        <button id="data-close" type="button">Close</button>
+        <p id="data-title"></p>
+        <p id="data-sensor"></p>
+        <div id="data-live"></div>
+        <p id="data-explainer"></p>
+      </div>
+    </div>
+
     <script>
       (async () => {
         // Preview/embed mode: ?preview=1 in the URL. Intended for embedding
@@ -833,11 +1088,14 @@
         // metadata (agency, data_type, description). Joined by norad_id here --
         // data_type drives sprite selection now, and the rest feeds Stage 4's
         // info panel later.
-        const [tleRes, metaRes, landRes] = await Promise.all([
-          fetch("/data/tle.json", { cache: "no-store" }),
-          fetch("/data/satellites.json", { cache: "no-store" }),
-          fetch("/data/land.json", { cache: "no-store" }),
-        ]);
+        const [tleRes, metaRes, landRes, capturesRes, statusRes] =
+          await Promise.all([
+            fetch("../data/tle.json", { cache: "no-store" }),
+            fetch("../data/satellites.json", { cache: "no-store" }),
+            fetch("../data/land.json", { cache: "no-store" }),
+            fetch("../data/captures.json", { cache: "no-store" }),
+            fetch("../data/status.json", { cache: "no-store" }),
+          ]);
         if (!tleRes.ok || !metaRes.ok) {
           document.getElementById("loading").textContent =
             `Couldn't load data (tle.json HTTP ${tleRes.status}, satellites.json HTTP ${metaRes.status}). ` +
@@ -846,8 +1104,14 @@
         }
         const tleData = await tleRes.json();
         const metaData = await metaRes.json();
-        // Land is optional -- the app still works (bare surface) if it's missing.
+        // Land, captures, and status are all optional -- the app works fine
+        // without any of them (bare surface, no capture buttons, no refresh
+        // timestamp). Fetched once here, same as everything else -- like
+        // tle.json, this won't live-update mid-session; a page reload is
+        // what picks up anything the scheduled Action has added since.
         const landData = landRes.ok ? await landRes.json() : { polygons: [] };
+        const capturesData = capturesRes.ok ? await capturesRes.json() : {};
+        const statusData = statusRes.ok ? await statusRes.json() : {};
         const metaById = new Map(
           metaData.satellites.map((m) => [m.norad_id, m]),
         );
@@ -2129,6 +2393,14 @@
 
             select() {
               tone(392, 0.26, 0.05, "sine", 523.25, true);
+            },
+            captureOpen() {
+              // Two soft, staggered notes rather than reusing select()'s
+              // single glide -- distinct enough to read as "here's the
+              // image" rather than "satellite selected", same calm
+              // register as everything else.
+              tone(587.33, 0.3, 0.045, "sine", 880, true);
+              setTimeout(() => tone(880, 0.5, 0.03, "sine", null, true), 90);
             },
             whale(loud, pan) {
               whaleCall(loud, pan);
@@ -3436,6 +3708,172 @@
           }
         }
 
+        // NOAA STAR's GeoColor imagery lives at a STABLE per-satellite URL --
+        // it always serves whatever is currently latest, so there's nothing
+        // to discover, cache, or route through the scheduled Action at all
+        // (that architecture decision was made explicitly a while back: see
+        // refresh_data.py's module docstring for why GOES stays out of that
+        // pipeline). Verified directly against NOAA's own CDN before use.
+        function goesLatestUrl(name) {
+          const m = /^GOES-(\d+)/i.exec((name || "").trim());
+          if (!m) return null;
+          return `https://cdn.star.nesdis.noaa.gov/GOES${m[1]}/ABI/FD/GEOCOLOR/339x339.jpg`;
+        }
+
+        // Single source of truth for "does this satellite have a capture,
+        // and where from" -- used by both the button-visibility check in
+        // openDex and the overlay itself, so the two can't drift apart.
+        function resolveCapture(sat) {
+          const stac = capturesData[String(sat.norad_id)];
+          if (stac) return stac;
+          const goesUrl = goesLatestUrl(sat.name);
+          if (goesUrl) return { url: goesUrl, live: true };
+          return null;
+        }
+
+        // Plain-language "how it works" per data_type, for the satellites
+        // that don't have (or will never have) a picture to show -- an
+        // altimeter or a spectrometer produces a profile or a number, not
+        // an image, and pretending otherwise would be dishonest. Turning
+        // that raw data into its OWN visualization is real future work
+        // (a genuine third stage), not something to fake here.
+        const DATA_TYPE_EXPLAINERS = {
+          "Multi-Instrument Land/Atmosphere":
+            "Carries several different instruments at once — imaging cloud cover, land surface temperature, and atmospheric aerosols — combined into one continuous global record.",
+          "Multi-Instrument Ocean/Atmosphere":
+            "Combines multiple instruments to track the global water cycle: precipitation, evaporation, sea-surface temperature, and humidity, all from one platform.",
+          "Weather Imaging":
+            "A visible and infrared imager scans the Earth in swaths as the satellite passes overhead, feeding cloud and surface imagery into daily weather forecasts.",
+          "Weather & Climate Imaging":
+            "A high-resolution imager captures visible and infrared swaths on every pass — the backbone data source for both daily forecasting and long-term climate records.",
+          "Geostationary Weather Imaging":
+            "Parked in a fixed orbit 36,000 km above one point on Earth, so instead of passing overhead briefly it stares continuously at the same hemisphere — tracking a storm's development in near-real time rather than catching only a snapshot.",
+          "Radar Altimetry (Ice Thickness)":
+            "A radar altimeter bounces pulses off the surface and times their return to measure ice height to within centimeters, revealing how much polar ice has thinned or thickened over time.",
+          "Laser Altimetry (Ice/Land Elevation)":
+            "Fires laser pulses 10,000 times a second and times their return, building an extremely precise elevation map — ice sheets, sea ice, forest canopy, all from the same instrument.",
+          "Radar Imagery":
+            "Sends its own radar pulses and reads the echo, so it can image the surface through cloud cover and total darkness — conditions an ordinary camera can't see through at all.",
+          "Precipitation Radar":
+            "Profiles rain and snow in three dimensions from orbit, estimating how much precipitation is falling across a wide swath beneath the satellite.",
+          "Optical Multispectral":
+            "A camera-like sensor captures reflected sunlight across several distinct wavelength bands — the same basic idea as an ordinary photo, tuned to reveal vegetation health, water boundaries, and land use invisible to the naked eye.",
+          "Optical & Thermal Multispectral":
+            "Combines a multispectral camera with a thermal sensor, capturing both reflected sunlight and surface heat in the same pass — the longest continuous land-imaging record of any satellite program.",
+          "Ocean & Land Color + Altimetry":
+            "Pairs a color sensor tracking ocean and land surface color with a radar altimeter measuring sea-surface height, feeding both ocean forecasting and land monitoring from one satellite.",
+          "Ocean Topography (Altimetry)":
+            "A radar altimeter measures the exact height of the sea surface to millimeter precision, extending a continuous multi-decade record of sea-level rise and ocean currents.",
+          "Atmospheric (Greenhouse Gas)":
+            "A spectrometer measures exactly which wavelengths of sunlight are absorbed passing through the atmosphere, revealing the concentration of gases like CO2 and methane in the column of air below.",
+          "Soil Moisture":
+            "An L-band radiometer reads the microwave radiation naturally emitted by soil, which changes measurably with how much water it holds — mapping global soil moisture and freeze/thaw state to support drought monitoring and crop forecasting.",
+        };
+
+        // Keyword fallback: catches real-world wording drift between this
+        // dictionary (written from a catalog snapshot that may be stale)
+        // and the actual data_type strings in the live satellites.json --
+        // e.g. this dictionary's exact key is "Radar Imagery", but if a
+        // satellite's real entry says "SAR Imagery" or "L-band Radar" the
+        // OLD exact-match-only version would silently fall through to a
+        // useless default even though a perfectly good explanation for
+        // that exact category already exists.
+        //
+        // ORDER IS LOAD-BEARING, not cosmetic -- checked most-specific/
+        // compound first, most-generic last, and this was verified against
+        // every real data_type string in the actual catalog, not assumed.
+        // Three real mismatches were caught this way and are noted inline:
+        // a naive "most specific keyword" read is not enough when a string
+        // can satisfy several rules at once and order decides the winner.
+        const DATA_TYPE_KEYWORD_RULES = [
+          // Laser/lidar MUST be checked before generic altimetry: "Laser
+          // altimetry (ice & land elevation)" contains "altimetry" too, so
+          // with the old order the generic (radar) rule below won the race
+          // and ICESat-2 -- a LASER instrument -- got told it was radar.
+          [
+            /laser|lidar/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Laser Altimetry (Ice/Land Elevation)"],
+          ],
+          // Ocean-colour-plus-altimetry MUST also be checked before generic
+          // altimetry, for the same reason ("Ocean & land colour,
+          // altimetry" contains "altimetry" too) -- AND the spelling here
+          // has to accept BOTH color/colour (u? makes the "u" optional),
+          // since the real catalog uses the British spelling this dictionary
+          // key didn't originally account for.
+          [
+            /ocean.*colou?r|colou?r.*ocean/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Ocean & Land Color + Altimetry"],
+          ],
+          [
+            /altimet|topography/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Radar Altimetry (Ice Thickness)"],
+          ],
+          [/precipitation/i, null, DATA_TYPE_EXPLAINERS["Precipitation Radar"]],
+          [
+            /geostationary/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Geostationary Weather Imaging"],
+          ],
+          [/soil moisture/i, null, DATA_TYPE_EXPLAINERS["Soil Moisture"]],
+          // Narrowed from a bare /atmospheric/ to the two-word phrase --
+          // the real catalog's VIIRS entries say "atmospheric sounding" (a
+          // weather term), which the old broad pattern matched and wrongly
+          // handed the CO2/methane greenhouse-gas explanation to NOAA-20,
+          // NOAA-21, and Suomi NPP.
+          [
+            /greenhouse|atmospheric chemistry/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Atmospheric (Greenhouse Gas)"],
+          ],
+          [
+            /multi-?instrument/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Multi-Instrument Land/Atmosphere"],
+          ],
+          // "viirs" added explicitly: the real string "VIIRS imaging &
+          // atmospheric sounding" contains neither "weather" nor "climate"
+          // literally, so it would otherwise fall through this rule too.
+          [
+            /weather|climate|viirs/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Weather & Climate Imaging"],
+          ],
+          [
+            /optical.*thermal|thermal.*optical/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Optical & Thermal Multispectral"],
+          ],
+          [
+            /optical|multispectral/i,
+            null,
+            DATA_TYPE_EXPLAINERS["Optical Multispectral"],
+          ],
+          [/radar|sar\b/i, null, DATA_TYPE_EXPLAINERS["Radar Imagery"]],
+        ];
+
+        function explainerFor(dataType) {
+          if (!dataType) return null;
+          if (DATA_TYPE_EXPLAINERS[dataType])
+            return DATA_TYPE_EXPLAINERS[dataType];
+          for (const [must, mustNot, text] of DATA_TYPE_KEYWORD_RULES) {
+            if (must.test(dataType) && !(mustNot && mustNot.test(dataType)))
+              return text;
+          }
+          return null;
+        }
+
+        // Even total misses get something more useful than a flat "not
+        // written yet" -- naming the actual data_type the person can
+        // already see elsewhere in the panel, rather than a dead end.
+        function defaultExplainer(dataType) {
+          return dataType
+            ? `Collects ${dataType.toLowerCase()} data. A more detailed explanation for this specific instrument type isn't written yet.`
+            : "A detailed explanation for this instrument type isn't written yet.";
+        }
+
         function openDex(sat) {
           dexSat = sat;
           const set = (id, val) => {
@@ -3457,6 +3895,17 @@
           document.getElementById("dex-note").style.display = m.status_note
             ? ""
             : "none";
+          // Every satellite gets SOME button now, never a dead end: a
+          // resolved capture gets "See last capture" (opens the image
+          // overlay); anything else -- a non-imaging instrument, or an
+          // imaging type with no resolver built yet -- gets "See data"
+          // (opens the plain-language explainer instead). Nothing is
+          // hidden anymore; there's just two different destinations.
+          const cap = resolveCapture(sat);
+          const captureBtn = document.getElementById("dex-capture");
+          captureBtn.style.display = "";
+          captureBtn.disabled = false;
+          captureBtn.textContent = cap ? "See last capture" : "See data";
           renderDexSprite(sat);
           updateDexLive();
           dexEl.classList.add("open");
@@ -3479,8 +3928,174 @@
         dexEl.addEventListener("click", (e) => {
           if (e.target === dexEl) closeDex();
         }); // click the backdrop to dismiss
+
+        // ---------------- last-capture overlay ----------------
+        const captureOverlayEl = document.getElementById("capture-overlay");
+        const captureFrameEl = document.getElementById("capture-frame");
+        const captureImgEl = document.getElementById("capture-img");
+        const captureErrorEl = document.getElementById("capture-error");
+
+        function formatCaptureTime(iso) {
+          if (!iso) return "—";
+          const d = new Date(iso);
+          if (isNaN(d)) return "—";
+          // UTC explicitly, not the viewer's local zone -- this is when the
+          // satellite passed over, a fact about the satellite, not the viewer.
+          return (
+            d.toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: "UTC",
+              hour12: false,
+            }) + " UTC"
+          );
+        }
+
+        function openCaptureOverlay() {
+          if (!dexSat) return;
+          const cap = resolveCapture(dexSat);
+          if (!cap) return; // button is hidden in this case, but guard anyway
+
+          if (cap.live) {
+            // GOES: a stable, always-current URL with no per-scene
+            // timestamp of our own and no scheduled-fetch cadence behind
+            // it -- "captured" and a 6h refresh line would both be
+            // dishonest here, so this gets its own wording.
+            document.getElementById("capture-when").textContent = "live";
+            document.getElementById("capture-refresh").textContent =
+              "updates continuously — no scheduled fetch for this source";
+          } else {
+            document.getElementById("capture-when").textContent =
+              formatCaptureTime(cap.captured_at);
+            // Static line, not a live countdown: a countdown would mean
+            // hardcoding the Action's cron cadence a second time in JS, and
+            // silently going stale if the schedule is ever changed in the
+            // workflow file without remembering to update this too.
+            document.getElementById("capture-refresh").textContent =
+              `checks run every 6 hours · last checked ${formatCaptureTime(statusData.last_checked_at)}`;
+          }
+
+          captureErrorEl.style.display = "none";
+          captureImgEl.style.display = "";
+          captureImgEl.classList.remove("loaded");
+          captureFrameEl.classList.remove("sweeping");
+          captureFrameEl.classList.add("loading");
+
+          // Fresh handlers per open, since captureImgEl.src changes each time.
+          captureImgEl.onload = () => {
+            captureFrameEl.classList.remove("loading");
+            captureFrameEl.classList.add("sweeping");
+            captureImgEl.classList.add("loaded");
+            // Matches the 900ms sweep animation duration -- cleans up the
+            // class once the one-shot animation has actually finished,
+            // rather than leaving it re-triggerable indefinitely.
+            setTimeout(() => captureFrameEl.classList.remove("sweeping"), 950);
+          };
+          captureImgEl.onerror = () => {
+            captureFrameEl.classList.remove("loading");
+            captureImgEl.style.display = "none";
+            captureErrorEl.style.display = "block";
+          };
+          captureImgEl.src = cap.url;
+
+          captureOverlayEl.classList.add("open");
+          captureOverlayEl.setAttribute("aria-hidden", "false");
+          document.getElementById("capture-close").focus();
+          Audio.captureOpen();
+        }
+
+        function closeCaptureOverlay() {
+          captureOverlayEl.classList.remove("open");
+          captureOverlayEl.setAttribute("aria-hidden", "true");
+          document.getElementById("dex-close").focus();
+        }
+
+        // ---------------- "Data" overlay (the non-image fallback) ----------------
+        const dataOverlayEl = document.getElementById("data-overlay");
+
+        function openDataOverlay() {
+          if (!dexSat) return;
+          const m = dexSat.meta || {};
+          document.getElementById("data-title").textContent = dexSat.name;
+          document.getElementById("data-sensor").textContent =
+            m.sensor || m.data_type || "Instrument details unavailable";
+          document.getElementById("data-explainer").textContent =
+            explainerFor(m.data_type) || defaultExplainer(m.data_type);
+
+          // Reuses updateDexLive()'s own numbers rather than recomputing
+          // anything -- same position, same "as of now" moment the dex
+          // panel underneath is already showing.
+          const liveEl = document.getElementById("data-live");
+          if (dexSat.ok) {
+            const lat = dexSat.latDeg,
+              lon = dexSat.lonDeg;
+            const now = new Date().toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              timeZone: "UTC",
+              hour12: false,
+            });
+            liveEl.textContent =
+              `as of ${now} UTC — ${Math.abs(lat).toFixed(2)}° ${lat >= 0 ? "N" : "S"}, ` +
+              `${Math.abs(lon).toFixed(2)}° ${lon >= 0 ? "E" : "W"}, ${dexSat.altKm.toFixed(0)} km altitude`;
+          } else {
+            liveEl.textContent = "no current position fix";
+          }
+
+          dataOverlayEl.classList.add("open");
+          dataOverlayEl.setAttribute("aria-hidden", "false");
+          document.getElementById("data-close").focus();
+          Audio.captureOpen(); // same quiet chime -- same category of moment, just no image
+        }
+
+        function closeDataOverlay() {
+          dataOverlayEl.classList.remove("open");
+          dataOverlayEl.setAttribute("aria-hidden", "true");
+          document.getElementById("dex-close").focus();
+        }
+
+        // The one dex-capture button dispatches to whichever destination
+        // this satellite actually has -- see the textContent set in openDex.
+        document.getElementById("dex-capture").addEventListener("click", () => {
+          if (resolveCapture(dexSat)) openCaptureOverlay();
+          else openDataOverlay();
+        });
+        document
+          .getElementById("capture-close")
+          .addEventListener("click", closeCaptureOverlay);
+        document
+          .getElementById("data-close")
+          .addEventListener("click", closeDataOverlay);
+        captureOverlayEl.addEventListener("click", (e) => {
+          if (e.target === captureOverlayEl) closeCaptureOverlay();
+        });
+        dataOverlayEl.addEventListener("click", (e) => {
+          if (e.target === dataOverlayEl) closeDataOverlay();
+        });
         window.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && dexEl.classList.contains("open"))
+          if (e.key !== "Escape") return;
+          if (captureOverlayEl.classList.contains("open"))
+            closeCaptureOverlay();
+          else if (dataOverlayEl.classList.contains("open")) closeDataOverlay();
+        });
+
+        window.addEventListener("keydown", (e) => {
+          // Guarded so a single Escape closes only the TOP layer: if EITHER
+          // the capture overlay OR the data overlay is open (both open on
+          // top of an already-open dex, which never actually closes
+          // underneath them), this listener backs off and lets the
+          // relevant handler above take it -- otherwise multiple listeners
+          // would fire on the same keypress and close everything in one go
+          // instead of one layer at a time.
+          if (
+            e.key === "Escape" &&
+            dexEl.classList.contains("open") &&
+            !captureOverlayEl.classList.contains("open") &&
+            !dataOverlayEl.classList.contains("open")
+          )
             closeDex();
         });
         setInterval(updateDexLive, 1000);

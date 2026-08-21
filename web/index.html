@@ -4491,10 +4491,12 @@
         }
 
         // ---------------- main loop ----------------
-        // ---------------- TEMPORARY DEBUG HUD (press D to toggle) ------------
-        // Diagnostic only -- delete once the roam behaviour is settled. Shows
-        // which code path is actually moving the view each frame, so a reported
-        // "it curves" can be attributed to drag, wheel, or snap instead of guessed.
+        // ---------------- DEBUG HUD (press D to toggle) ------------
+        // Kept in deliberately, not leftover scaffolding: shows which code
+        // path is actually moving the view each frame (drag / wheel / snap)
+        // -- the exact instrumentation used to diagnose several real pole-
+        // navigation bugs during development (see README). Left live on
+        // purpose as a small, honest signal of the debugging process.
         const dbg = document.createElement("div");
         dbg.style.cssText =
           "position:fixed;left:8px;top:8px;z-index:9999;display:none;" +

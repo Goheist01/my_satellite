@@ -6,27 +6,27 @@
     "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_177001_20260814_02_T2/thumbnail"
   },
   "40697": {
-    "captured_at": "2026-08-13T04:04:47.088000Z",
-    "resolved_at": "2026-08-23T04:04:34.456567+00:00",
-    "scene_id": "S2A_47PLR_20260813_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/47/P/LR/2026/8/S2A_47PLR_20260813_0_L2A/preview.jpg"
+    "captured_at": "2026-08-16T15:51:05.403000Z",
+    "resolved_at": "2026-08-23T15:41:15.018446+00:00",
+    "scene_id": "S2A_19TDJ_20260816_1_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/19/T/DJ/2026/8/S2A_19TDJ_20260816_1_L2A/preview.jpg"
   },
   "42063": {
-    "captured_at": "2026-08-15T21:29:44.512000Z",
-    "resolved_at": "2026-08-23T09:46:40.694157+00:00",
-    "scene_id": "S2B_3LTD_20260815_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/3/L/TD/2026/8/S2B_3LTD_20260815_0_L2A/preview.jpg"
+    "captured_at": "2026-08-13T15:41:30.111000Z",
+    "resolved_at": "2026-08-23T15:41:16.113851+00:00",
+    "scene_id": "S2B_18NUM_20260813_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/18/N/UM/2026/8/S2B_18NUM_20260813_0_L2A/preview.jpg"
   },
   "49260": {
-    "captured_at": "2026-08-05T04:16:52.331058Z",
-    "resolved_at": "2026-08-23T04:04:33.544088+00:00",
-    "scene_id": "LC09_L2SP_138009_20260805_02_T1",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_138009_20260805_02_T1/thumbnail"
+    "captured_at": "2026-08-07T15:41:29.011206Z",
+    "resolved_at": "2026-08-23T15:41:13.850327+00:00",
+    "scene_id": "LC09_L2SP_015021_20260807_02_T1",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_015021_20260807_02_T1/thumbnail"
   },
   "60989": {
-    "captured_at": "2026-08-13T09:46:51.956000Z",
-    "resolved_at": "2026-08-23T09:46:41.448540+00:00",
-    "scene_id": "S2C_32PRA_20260813_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/P/RA/2026/8/S2C_32PRA_20260813_0_L2A/preview.jpg"
+    "captured_at": "2026-08-19T03:29:58.349000Z",
+    "resolved_at": "2026-08-23T15:41:17.207078+00:00",
+    "scene_id": "S2C_48MTT_20260819_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/48/M/TT/2026/8/S2C_48MTT_20260819_0_L2A/preview.jpg"
   }
 }

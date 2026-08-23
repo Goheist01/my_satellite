@@ -1,13 +1,14 @@
 {
   "captures": {
     "errors": {
-      "39084": "no recent LC08 scene found in search window"
+      "39084": "no recent LC08 scene found in search window",
+      "49260": "no recent LC09 scene found in search window"
     },
-    "last_attempt_at": "2026-08-23T15:41:17.708035+00:00",
-    "last_success_at": "2026-08-23T15:41:17.708035+00:00",
-    "successes": 4
+    "last_attempt_at": "2026-08-23T21:39:46.932221+00:00",
+    "last_success_at": "2026-08-23T21:39:46.932221+00:00",
+    "successes": 3
   },
-  "last_checked_at": "2026-08-23T15:41:17.708035+00:00",
+  "last_checked_at": "2026-08-23T21:39:46.932221+00:00",
   "tle": {
     "errors": {},
     "last_attempt_at": "2026-08-21T21:43:22.644015+00:00",

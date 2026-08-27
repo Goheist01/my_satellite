@@ -1,9 +1,9 @@
 {
   "39084": {
-    "captured_at": "2026-08-21T05:17:48.795797Z",
-    "resolved_at": "2026-08-26T16:37:09.812822+00:00",
-    "scene_id": "LC08_L2SP_146038_20260821_02_T1",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_146038_20260821_02_T1/thumbnail"
+    "captured_at": "2026-08-18T16:02:21.834514Z",
+    "resolved_at": "2026-08-27T14:18:10.015624+00:00",
+    "scene_id": "LC08_L2SP_004244_20260818_02_T2",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_004244_20260818_02_T2/thumbnail"
   },
   "40697": {
     "captured_at": "2026-08-19T04:15:48.370000Z",

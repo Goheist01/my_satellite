@@ -2,13 +2,14 @@
   "captures": {
     "errors": {
       "39084": "no recent LC08 scene found in search window",
+      "40697": "no recent S2A scene found in search window",
       "60989": "no recent S2C scene found in search window"
     },
-    "last_attempt_at": "2026-08-31T09:54:20.551734+00:00",
-    "last_success_at": "2026-08-31T09:54:20.551734+00:00",
-    "successes": 3
+    "last_attempt_at": "2026-08-31T20:51:57.386127+00:00",
+    "last_success_at": "2026-08-31T20:51:57.386127+00:00",
+    "successes": 2
   },
-  "last_checked_at": "2026-08-31T09:54:20.551734+00:00",
+  "last_checked_at": "2026-08-31T20:51:57.386127+00:00",
   "tle": {
     "errors": {
       "25994": "HTTP Error 503: Service Unavailable",

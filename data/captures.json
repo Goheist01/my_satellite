@@ -12,10 +12,10 @@
     "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/19/L/BJ/2026/8/S2A_19LBJ_20260828_0_L2A/preview.jpg"
   },
   "42063": {
-    "captured_at": "2026-09-04T14:55:58.885000Z",
-    "resolved_at": "2026-09-07T15:05:53.400686+00:00",
-    "scene_id": "S2B_18GUP_20260904_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/18/G/UP/2026/9/S2B_18GUP_20260904_0_L2A/preview.jpg"
+    "captured_at": "2026-09-07T08:01:11.539000Z",
+    "resolved_at": "2026-09-07T19:13:10.093362+00:00",
+    "scene_id": "S2B_38RLV_20260907_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/38/R/LV/2026/9/S2B_38RLV_20260907_0_L2A/preview.jpg"
   },
   "49260": {
     "captured_at": "2026-08-31T08:19:47.485907Z",

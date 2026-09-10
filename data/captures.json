@@ -1,27 +1,27 @@
 {
   "39084": {
-    "captured_at": "2026-08-18T11:27:59.988377Z",
-    "resolved_at": "2026-09-09T23:18:58.652853+00:00",
-    "scene_id": "LC08_L2SP_205052_20260818_02_T1",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_205052_20260818_02_T1/thumbnail"
+    "captured_at": "2026-08-25T08:13:16.876428Z",
+    "resolved_at": "2026-09-10T08:13:07.133623+00:00",
+    "scene_id": "LC08_L2SP_174044_20260825_02_T1",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_174044_20260825_02_T1/thumbnail"
   },
   "40697": {
-    "captured_at": "2026-09-04T11:29:33.949000Z",
-    "resolved_at": "2026-09-09T23:19:00.090966+00:00",
-    "scene_id": "S2A_28NFP_20260904_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/28/N/FP/2026/9/S2A_28NFP_20260904_0_L2A/preview.jpg"
+    "captured_at": "2026-09-07T08:03:26.011000Z",
+    "resolved_at": "2026-09-10T08:13:09.200554+00:00",
+    "scene_id": "S2A_39VVG_20260907_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/39/V/VG/2026/9/S2A_39VVG_20260907_0_L2A/preview.jpg"
   },
   "42063": {
-    "captured_at": "2026-09-06T18:30:55.046000Z",
-    "resolved_at": "2026-09-09T18:40:44.413340+00:00",
-    "scene_id": "S2B_12UUU_20260906_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/12/U/UU/2026/9/S2B_12UUU_20260906_0_L2A/preview.jpg"
+    "captured_at": "2026-08-31T08:13:23.612000Z",
+    "resolved_at": "2026-09-10T08:13:10.307137+00:00",
+    "scene_id": "S2B_37QCG_20260831_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/37/Q/CG/2026/8/S2B_37QCG_20260831_0_L2A/preview.jpg"
   },
   "49260": {
-    "captured_at": "2026-08-24T23:19:02.783659Z",
-    "resolved_at": "2026-09-09T23:18:59.372471+00:00",
-    "scene_id": "LC09_L2SP_086068_20260824_02_T2",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_086068_20260824_02_T2/thumbnail"
+    "captured_at": "2026-08-19T19:46:17.046050Z",
+    "resolved_at": "2026-09-10T08:13:08.062492+00:00",
+    "scene_id": "LC09_L2SR_051077_20260819_02_T2",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SR_051077_20260819_02_T2/thumbnail"
   },
   "60989": {
     "captured_at": "2026-09-08T05:22:42.533000Z",

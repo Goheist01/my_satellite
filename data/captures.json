@@ -1,9 +1,9 @@
 {
   "39084": {
-    "captured_at": "2026-09-04T08:41:14.442152Z",
-    "resolved_at": "2026-09-20T08:41:05.079155+00:00",
-    "scene_id": "LC08_L2SP_180021_20260904_02_T1",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_180021_20260904_02_T1/thumbnail"
+    "captured_at": "2026-09-11T07:12:07.671182Z",
+    "resolved_at": "2026-09-20T18:13:08.055203+00:00",
+    "scene_id": "LC08_L2SP_165030_20260911_02_T1",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_165030_20260911_02_T1/thumbnail"
   },
   "40697": {
     "captured_at": "2026-09-10T13:36:32.807000Z",
@@ -12,10 +12,10 @@
     "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/22/L/FK/2026/9/S2A_22LFK_20260910_0_L2A/preview.jpg"
   },
   "42063": {
-    "captured_at": "2026-09-10T08:41:12.178000Z",
-    "resolved_at": "2026-09-20T08:41:07.038150+00:00",
-    "scene_id": "S2B_30CWD_20260910_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/30/C/WD/2026/9/S2B_30CWD_20260910_0_L2A/preview.jpg"
+    "captured_at": "2026-09-10T18:13:15.010000Z",
+    "resolved_at": "2026-09-20T18:13:10.546212+00:00",
+    "scene_id": "S2B_12SXJ_20260910_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/12/S/XJ/2026/9/S2B_12SXJ_20260910_0_L2A/preview.jpg"
   },
   "49260": {
     "captured_at": "2026-09-13T19:39:04.175714Z",

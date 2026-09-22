@@ -18,10 +18,10 @@
     "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/21/L/XL/2026/9/S2B_21LXL_20260912_0_L2A/preview.jpg"
   },
   "49260": {
-    "captured_at": "2026-09-07T09:54:09.163555Z",
-    "resolved_at": "2026-09-22T14:04:44.565396+00:00",
-    "scene_id": "LC09_L2SP_193002_20260907_02_T2",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_193002_20260907_02_T2/thumbnail"
+    "captured_at": "2026-09-19T10:22:05.490599Z",
+    "resolved_at": "2026-09-22T18:58:16.137078+00:00",
+    "scene_id": "LC09_L2SP_197010_20260919_02_T1",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_197010_20260919_02_T1/thumbnail"
   },
   "60989": {
     "captured_at": "2026-09-07T02:15:27.628000Z",

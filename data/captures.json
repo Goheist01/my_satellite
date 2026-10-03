@@ -12,21 +12,21 @@
     "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/37/K/GP/2026/9/S2A_37KGP_20260929_0_L2A/preview.jpg"
   },
   "42063": {
-    "captured_at": "2026-09-30T08:16:42.748000Z",
-    "resolved_at": "2026-10-02T19:58:32.121707+00:00",
-    "scene_id": "S2B_36PYU_20260930_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/36/P/YU/2026/9/S2B_36PYU_20260930_0_L2A/preview.jpg"
+    "captured_at": "2026-10-02T20:51:03.086000Z",
+    "resolved_at": "2026-10-03T09:15:02.680049+00:00",
+    "scene_id": "S2B_4KEC_20261002_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/4/K/EC/2026/10/S2B_4KEC_20261002_0_L2A/preview.jpg"
   },
   "49260": {
-    "captured_at": "2026-09-14T10:04:43.544524Z",
-    "resolved_at": "2026-10-02T09:52:39.824932+00:00",
-    "scene_id": "LC09_L2SP_194013_20260914_02_T1",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_194013_20260914_02_T1/thumbnail"
+    "captured_at": "2026-09-17T09:15:03.673962Z",
+    "resolved_at": "2026-10-03T09:15:01.217649+00:00",
+    "scene_id": "LC09_L2SP_183059_20260917_02_T2",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_183059_20260917_02_T2/thumbnail"
   },
   "60989": {
-    "captured_at": "2026-09-22T22:52:52.405000Z",
-    "resolved_at": "2026-10-03T00:32:30.638295+00:00",
-    "scene_id": "S2C_8XNQ_20260922_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/8/X/NQ/2026/9/S2C_8XNQ_20260922_0_L2A/preview.jpg"
+    "captured_at": "2026-09-23T09:15:07.753000Z",
+    "resolved_at": "2026-10-03T09:15:03.551258+00:00",
+    "scene_id": "S2C_34QEG_20260923_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/34/Q/EG/2026/9/S2C_34QEG_20260923_0_L2A/preview.jpg"
   }
 }

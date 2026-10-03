@@ -1,18 +1,17 @@
 {
   "captures": {
     "errors": {
-      "39084": "no recent LC08 scene found in search window",
       "40697": "no recent S2A scene found in search window"
     },
-    "last_attempt_at": "2026-10-03T09:15:04.052359+00:00",
-    "last_success_at": "2026-10-03T09:15:04.052359+00:00",
-    "successes": 3
+    "last_attempt_at": "2026-10-03T14:21:07.784987+00:00",
+    "last_success_at": "2026-10-03T14:21:07.784987+00:00",
+    "successes": 4
   },
-  "last_checked_at": "2026-10-03T09:15:04.052359+00:00",
+  "last_checked_at": "2026-10-03T14:21:07.784987+00:00",
   "tle": {
     "errors": {},
-    "last_attempt_at": "2026-10-01T10:15:57.760027+00:00",
-    "last_success_at": "2026-10-01T10:15:57.760027+00:00",
+    "last_attempt_at": "2026-10-03T14:21:07.784987+00:00",
+    "last_success_at": "2026-10-03T14:21:07.784987+00:00",
     "successes": 25
   }
 }

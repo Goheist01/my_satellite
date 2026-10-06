@@ -1,46 +1,19 @@
 {
   "captures": {
     "errors": {
+      "39084": "no recent LC08 scene found in search window",
       "40697": "no recent S2A scene found in search window",
-      "42063": "no recent S2B scene found in search window",
-      "49260": "no recent LC09 scene found in search window",
-      "60989": "no recent S2C scene found in search window"
+      "42063": "no recent S2B scene found in search window"
     },
-    "last_attempt_at": "2026-10-06T10:34:38.017541+00:00",
-    "last_success_at": "2026-10-06T10:34:38.017541+00:00",
-    "successes": 1
+    "last_attempt_at": "2026-10-06T20:22:26.991355+00:00",
+    "last_success_at": "2026-10-06T20:22:26.991355+00:00",
+    "successes": 2
   },
-  "last_checked_at": "2026-10-06T10:34:38.017541+00:00",
+  "last_checked_at": "2026-10-06T20:22:26.991355+00:00",
   "tle": {
-    "errors": {
-      "25994": "<urlopen error timed out>",
-      "27424": "<urlopen error timed out>",
-      "37849": "<urlopen error timed out>",
-      "39084": "<urlopen error timed out>",
-      "39634": "<urlopen error timed out>",
-      "39766": "<urlopen error timed out>",
-      "40336": "<urlopen error timed out>",
-      "40376": "<urlopen error timed out>",
-      "40697": "<urlopen error timed out>",
-      "41335": "<urlopen error timed out>",
-      "41866": "<urlopen error timed out>",
-      "42063": "<urlopen error timed out>",
-      "42969": "<urlopen error timed out>",
-      "43013": "<urlopen error timed out>",
-      "43437": "<urlopen error timed out>",
-      "43613": "<urlopen error timed out>",
-      "46984": "<urlopen error timed out>",
-      "49260": "<urlopen error timed out>",
-      "51850": "<urlopen error timed out>",
-      "54234": "<urlopen error timed out>",
-      "60133": "<urlopen error timed out>",
-      "60182": "<urlopen error timed out>",
-      "60989": "<urlopen error timed out>",
-      "62261": "<urlopen error timed out>",
-      "66315": "<urlopen error timed out>"
-    },
-    "last_attempt_at": "2026-10-06T10:34:38.017541+00:00",
-    "last_success_at": "2026-10-03T14:21:07.784987+00:00",
-    "successes": 0
+    "errors": {},
+    "last_attempt_at": "2026-10-06T20:22:26.991355+00:00",
+    "last_success_at": "2026-10-06T20:22:26.991355+00:00",
+    "successes": 25
   }
 }

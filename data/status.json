@@ -1,13 +1,14 @@
 {
   "captures": {
     "errors": {
-      "49260": "no recent LC09 scene found in search window"
+      "49260": "no recent LC09 scene found in search window",
+      "60989": "no recent S2C scene found in search window"
     },
-    "last_attempt_at": "2026-10-10T09:57:39.117577+00:00",
-    "last_success_at": "2026-10-10T09:57:39.117577+00:00",
-    "successes": 4
+    "last_attempt_at": "2026-10-10T19:19:38.855379+00:00",
+    "last_success_at": "2026-10-10T19:19:38.855379+00:00",
+    "successes": 3
   },
-  "last_checked_at": "2026-10-10T09:57:39.117577+00:00",
+  "last_checked_at": "2026-10-10T19:19:38.855379+00:00",
   "tle": {
     "errors": {},
     "last_attempt_at": "2026-10-08T20:43:11.562214+00:00",

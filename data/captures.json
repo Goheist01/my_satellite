@@ -24,9 +24,9 @@
     "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_095071_20260925_02_T2/thumbnail"
   },
   "60989": {
-    "captured_at": "2026-09-11T00:16:08.422000Z",
-    "resolved_at": "2026-10-11T00:16:03.415732+00:00",
-    "scene_id": "S2C_56NNH_20260911_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/56/N/NH/2026/9/S2C_56NNH_20260911_0_L2A/preview.jpg"
+    "captured_at": "2026-10-01T10:07:06.553000Z",
+    "resolved_at": "2026-10-11T10:07:04.796300+00:00",
+    "scene_id": "S2C_33UWQ_20261001_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/33/U/WQ/2026/10/S2C_33UWQ_20261001_0_L2A/preview.jpg"
   }
 }

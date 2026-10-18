@@ -1,9 +1,9 @@
 {
   "39084": {
-    "captured_at": "2026-10-06T00:50:32.437959Z",
-    "resolved_at": "2026-10-18T13:21:13.726190+00:00",
-    "scene_id": "LC08_L2SP_100080_20261006_02_T1",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_100080_20261006_02_T1/thumbnail"
+    "captured_at": "2026-10-02T04:39:48.336841Z",
+    "resolved_at": "2026-10-18T18:10:55.732143+00:00",
+    "scene_id": "LC08_L2SR_136097_20261002_02_T2",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SR_136097_20261002_02_T2/thumbnail"
   },
   "40697": {
     "captured_at": "2026-10-10T08:12:11.072000Z",
@@ -12,16 +12,16 @@
     "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/39/W/VM/2026/10/S2A_39WVM_20261010_0_L2A/preview.jpg"
   },
   "42063": {
-    "captured_at": "2026-10-16T00:28:04.270000Z",
-    "resolved_at": "2026-10-18T13:21:16.103367+00:00",
-    "scene_id": "S2B_54GYA_20261016_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/54/G/YA/2026/10/S2B_54GYA_20261016_0_L2A/preview.jpg"
+    "captured_at": "2026-10-17T23:39:24.712000Z",
+    "resolved_at": "2026-10-18T18:10:58.123561+00:00",
+    "scene_id": "S2B_50CNS_20261017_2_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/50/C/NS/2026/10/S2B_50CNS_20261017_2_L2A/preview.jpg"
   },
   "49260": {
-    "captured_at": "2026-09-30T09:02:38.674871Z",
-    "resolved_at": "2026-10-17T23:10:48.673966+00:00",
-    "scene_id": "LC09_L2SR_178105_20260930_02_T2",
-    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SR_178105_20260930_02_T2/thumbnail"
+    "captured_at": "2026-10-02T18:11:18.089741Z",
+    "resolved_at": "2026-10-18T18:10:56.538587+00:00",
+    "scene_id": "LC09_L2SP_039024_20261002_02_T1",
+    "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_039024_20261002_02_T1/thumbnail"
   },
   "60989": {
     "captured_at": "2026-10-09T07:38:33.506000Z",

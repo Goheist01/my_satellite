@@ -6,16 +6,16 @@
     "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SR_079080_20261103_02_T1/thumbnail"
   },
   "40697": {
-    "captured_at": "2026-11-06T11:38:13.936000Z",
-    "resolved_at": "2026-11-16T11:38:05.950538+00:00",
-    "scene_id": "S2A_28PDU_20261106_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/28/P/DU/2026/11/S2A_28PDU_20261106_0_L2A/preview.jpg"
+    "captured_at": "2026-11-19T10:10:52.394000Z",
+    "resolved_at": "2026-11-20T22:16:19.410554+00:00",
+    "scene_id": "S2A_31NEA_20261119_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/31/N/EA/2026/11/S2A_31NEA_20261119_0_L2A/preview.jpg"
   },
   "42063": {
-    "captured_at": "2026-11-17T10:56:41.404000Z",
-    "resolved_at": "2026-11-19T22:40:57.053665+00:00",
-    "scene_id": "S2B_29QRU_20261117_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/29/Q/RU/2026/11/S2B_29QRU_20261117_0_L2A/preview.jpg"
+    "captured_at": "2026-11-20T11:00:52.299000Z",
+    "resolved_at": "2026-11-20T22:16:20.441640+00:00",
+    "scene_id": "S2B_30SWG_20261120_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/30/S/WG/2026/11/S2B_30SWG_20261120_0_L2A/preview.jpg"
   },
   "49260": {
     "captured_at": "2026-11-16T11:11:40.012751Z",
@@ -24,9 +24,9 @@
     "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC09_L2SP_203041_20261116_02_T1/thumbnail"
   },
   "60989": {
-    "captured_at": "2026-11-10T11:50:17.667000Z",
-    "resolved_at": "2026-11-17T22:57:25.120958+00:00",
-    "scene_id": "S2C_28TEK_20261110_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/28/T/EK/2026/11/S2C_28TEK_20261110_0_L2A/preview.jpg"
+    "captured_at": "2026-10-31T22:16:25.963000Z",
+    "resolved_at": "2026-11-20T22:16:21.498265+00:00",
+    "scene_id": "S2C_60HVD_20261031_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/60/H/VD/2026/10/S2C_60HVD_20261031_0_L2A/preview.jpg"
   }
 }

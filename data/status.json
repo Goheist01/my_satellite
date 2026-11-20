@@ -2,20 +2,24 @@
   "captures": {
     "errors": {
       "39084": "no recent LC08 scene found in search window",
-      "40697": "no recent S2A scene found in search window",
-      "42063": "no recent S2B scene found in search window",
-      "49260": "no recent LC09 scene found in search window",
-      "60989": "no recent S2C scene found in search window"
+      "49260": "no recent LC09 scene found in search window"
     },
-    "last_attempt_at": "2026-11-20T11:51:09.836017+00:00",
-    "last_success_at": "2026-11-19T22:40:58.128902+00:00",
-    "successes": 0
+    "last_attempt_at": "2026-11-20T22:16:21.999288+00:00",
+    "last_success_at": "2026-11-20T22:16:21.999288+00:00",
+    "successes": 3
   },
-  "last_checked_at": "2026-11-20T11:51:09.836017+00:00",
+  "last_checked_at": "2026-11-20T22:16:21.999288+00:00",
   "tle": {
-    "errors": {},
-    "last_attempt_at": "2026-11-18T11:53:23.782862+00:00",
-    "last_success_at": "2026-11-18T11:53:23.782862+00:00",
-    "successes": 25
+    "errors": {
+      "27424": "HTTP Error 500: Internal Server Error",
+      "39766": "HTTP Error 500: Internal Server Error",
+      "40336": "HTTP Error 500: Internal Server Error",
+      "41866": "HTTP Error 500: Internal Server Error",
+      "51850": "HTTP Error 500: Internal Server Error",
+      "60182": "HTTP Error 500: Internal Server Error"
+    },
+    "last_attempt_at": "2026-11-20T22:16:21.999288+00:00",
+    "last_success_at": "2026-11-20T22:16:21.999288+00:00",
+    "successes": 19
   }
 }

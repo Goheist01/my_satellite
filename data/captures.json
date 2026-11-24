@@ -6,10 +6,10 @@
     "url": "https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2/items/LC08_L2SP_116047_20261107_02_T1/thumbnail"
   },
   "40697": {
-    "captured_at": "2026-11-19T10:10:52.394000Z",
-    "resolved_at": "2026-11-20T22:16:19.410554+00:00",
-    "scene_id": "S2A_31NEA_20261119_0_L2A",
-    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/31/N/EA/2026/11/S2A_31NEA_20261119_0_L2A/preview.jpg"
+    "captured_at": "2026-11-13T14:34:00.557000Z",
+    "resolved_at": "2026-11-24T23:55:53.884118+00:00",
+    "scene_id": "S2A_23WNQ_20261113_0_L2A",
+    "url": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/23/W/NQ/2026/11/S2A_23WNQ_20261113_0_L2A/preview.jpg"
   },
   "42063": {
     "captured_at": "2026-11-11T13:43:24.090000Z",
